@@ -4,9 +4,9 @@ services:
     container_name: sdet-commerce-postgres
 
     environment:
-      POSTGRES_DB: sdetcommerce
-      POSTGRES_USER: sdetuser
-      POSTGRES_PASSWORD: sdetpassword
+      POSTGRES_DB: ${DB_NAME:-sdetcommerce}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
 
     ports:
       - "5432:5432"

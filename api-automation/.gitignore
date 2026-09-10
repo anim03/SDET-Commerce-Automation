@@ -1,0 +1,3 @@
+# API automation-specific ignore rules can be added here if required.
+# Common build, environment, report and IDE files are ignored
+# by the repository root .gitignore.

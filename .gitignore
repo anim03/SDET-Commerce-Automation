@@ -1,0 +1,97 @@
+# =========================
+# Environment & Secrets
+# =========================
+
+.env
+.env.*
+*.env
+
+# Safe environment templates must be committed
+!.env.example
+!**/.env.example
+
+secrets.properties
+application-local.properties
+
+
+# =========================
+# IDE
+# =========================
+
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+
+# =========================
+# OS
+# =========================
+
+.DS_Store
+
+
+# =========================
+# Java / Maven Build
+# =========================
+
+target/
+**/target/
+*.class
+
+
+# =========================
+# Logs
+# =========================
+
+*.log
+logs/
+**/logs/
+
+
+# =========================
+# Test Reports
+# =========================
+
+allure-results/
+**/allure-results/
+
+allure-report/
+**/allure-report/
+
+test-output/
+**/test-output/
+
+
+# =========================
+# Temporary / Backup Files
+# =========================
+
+*.backup
+*.bak
+*.tmp
+*.swp
+*~
+
+
+# =========================
+# Frontend / Node
+# =========================
+
+node_modules/
+**/node_modules/
+
+dist/
+**/dist/
+
+coverage/
+**/coverage/

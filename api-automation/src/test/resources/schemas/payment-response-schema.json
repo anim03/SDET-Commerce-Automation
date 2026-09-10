@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "paymentId",
+    "orderId",
+    "amount",
+    "paymentMethod",
+    "status",
+    "transactionId",
+    "createdAt"
+  ],
+  "properties": {
+    "paymentId": {
+      "type": "integer"
+    },
+    "orderId": {
+      "type": "integer"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "paymentMethod": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "FAILED"
+      ]
+    },
+    "transactionId": {
+      "type": "string",
+      "pattern": "^TXN-.+"
+    },
+    "createdAt": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
