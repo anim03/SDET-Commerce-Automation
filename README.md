@@ -1,5 +1,10 @@
 # SDET Commerce Automation
 
+## Author
+**Animesh Pandey**
+
+Senior SDET / Automation Lead portfolio project focused on modern Quality Engineering, automation architecture, API testing, UI automation, CI/CD, and cloud-ready testing practices.
+
 An end-to-end **Quality Engineering and SDET portfolio project** built to demonstrate backend development, API automation, database validation, security testing, test reporting, and scalable automation framework design.
 
 The project currently consists of a **Spring Boot REST API**, **PostgreSQL database**, and an independent **REST Assured + TestNG API automation framework**.
@@ -861,3 +866,4 @@ AWS Deployment
 **Animesh Pandey**
 
 Senior SDET / Automation Lead portfolio project focused on modern Quality Engineering, automation architecture, API testing, UI automation, CI/CD, and cloud-ready testing practices.
+
