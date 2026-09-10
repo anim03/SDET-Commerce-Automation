@@ -18108,3 +18108,1373 @@ Cloud
 ```
 
 so that the documentation always reflects what we can genuinely explain and demonstrate.
+
+---
+
+# PART 211 — FIRST GITHUB MILESTONE
+
+## 1. Why This Milestone Matters
+
+Until this point, the project was mainly running locally.
+
+Now the project has reached its first professional source-control milestone:
+
+```text
+Local Project
+     ↓
+Git Repository
+     ↓
+Security Review
+     ↓
+Professional Commit
+     ↓
+GitHub Remote
+     ↓
+Public GitHub Repository
+```
+
+Repository:
+
+```text
+SDET-Commerce-Automation
+```
+
+GitHub user:
+
+```text
+anim03
+```
+
+Repository visibility:
+
+```text
+PUBLIC
+```
+
+This means the project is now becoming:
+
+```text
+Learning Project
+      ↓
+Engineering Project
+      ↓
+Portfolio Project
+```
+
+---
+
+# PART 212 — STAGING AND SECURITY VERIFICATION
+
+## 1. Why Security Review Was Important
+
+Before publishing the repository, we did not blindly run:
+
+```bash
+git add .
+git commit
+git push
+```
+
+First we checked that sensitive and generated files would not accidentally reach GitHub.
+
+Important categories:
+
+```text
+.env files
+credentials
+JWT secrets
+database passwords
+tokens
+build output
+IDE files
+temporary files
+reports
+backup files
+```
+
+---
+
+## 2. `.gitignore`
+
+The root `.gitignore` protects categories such as:
+
+```text
+environment files
+IDE metadata
+OS-generated files
+build directories
+logs
+reports
+temporary files
+Node dependencies
+frontend build output
+coverage
+```
+
+At the same time:
+
+```text
+.env.example
+```
+
+is intentionally allowed.
+
+Why?
+
+Because:
+
+```text
+.env
+→ real local configuration
+
+.env.example
+→ safe configuration template
+```
+
+---
+
+## 3. Safe Environment Templates
+
+The repository contains safe example files:
+
+```text
+backend/.env.example
+api-automation/.env.example
+```
+
+Real local files such as:
+
+```text
+backend/.env
+api-automation/.env
+```
+
+must remain outside Git.
+
+Rule:
+
+```text
+Commit configuration structure.
+Never commit actual secrets.
+```
+
+---
+
+## 4. Verify Ignored Files
+
+Useful command:
+
+```bash
+git check-ignore -v backend/.env
+```
+
+and:
+
+```bash
+git check-ignore -v api-automation/.env
+```
+
+This helps verify:
+
+```text
+which .gitignore rule
+is protecting the file
+```
+
+---
+
+## 5. Review Repository Before Commit
+
+Important commands:
+
+```bash
+git status
+```
+
+```bash
+git diff
+```
+
+```bash
+git diff --cached
+```
+
+Meaning:
+
+```text
+git status
+→ what changed?
+
+git diff
+→ what is modified but unstaged?
+
+git diff --cached
+→ what exactly will be committed?
+```
+
+Senior SDET mindset:
+
+```text
+Do not trust the command.
+
+Inspect the evidence.
+```
+
+---
+
+## 6. Cleanup Before Publishing
+
+Temporary development files were cleaned before the milestone.
+
+Example cleanup commands:
+
+```bash
+find . -name "*.backup" -not -path "./.git/*" -delete
+```
+
+```bash
+find . -name "*.bak" -not -path "./.git/*" -delete
+```
+
+```bash
+find . -name ".DS_Store" -not -path "./.git/*" -delete
+```
+
+Why?
+
+Because a professional repository should not contain:
+
+```text
+editor backups
+OS metadata
+temporary copies
+accidental generated files
+```
+
+---
+
+## 7. Secret Scanning Mindset
+
+Before public push, inspect for patterns such as:
+
+```text
+password
+secret
+token
+Authorization
+private key
+API key
+```
+
+But remember:
+
+```text
+Keyword found
+≠
+Secret definitely found
+```
+
+For example:
+
+```text
+password
+```
+
+can legitimately appear in:
+
+```text
+documentation
+test descriptions
+placeholder configuration
+security code
+```
+
+Therefore:
+
+```text
+Search
+→ Inspect
+→ Classify
+→ Fix if required
+```
+
+---
+
+## 8. Important Security Principle
+
+If a real secret is ever committed and pushed:
+
+```text
+Deleting the line later is not sufficient.
+```
+
+Correct response:
+
+```text
+1. Rotate/revoke the credential
+2. Remove it from current source
+3. Clean history if required
+4. Verify repository again
+5. Add preventive controls
+```
+
+Treat exposed credentials as compromised.
+
+---
+
+# PART 213 — FIRST PROFESSIONAL COMMIT
+
+## 1. Commit Created
+
+After the repository review, the first major professional milestone commit was created.
+
+Commit:
+
+```text
+cf23ac6
+```
+
+Message:
+
+```text
+feat: complete backend and API automation milestone
+```
+
+---
+
+## 2. Why This Commit Message Is Good
+
+Structure:
+
+```text
+feat:
+```
+
+indicates a feature/milestone-oriented change.
+
+Message:
+
+```text
+complete backend and API automation milestone
+```
+
+describes the logical state being captured.
+
+Better than messages like:
+
+```text
+changes
+updated files
+final
+code
+my project
+```
+
+---
+
+## 3. Commit Size
+
+This was intentionally a large initial milestone commit because the project had already been developed substantially before GitHub publication.
+
+Recorded change:
+
+```text
+108 files changed
+26150 insertions
+2026 deletions
+```
+
+For future development:
+
+```text
+prefer smaller logical commits
+```
+
+because they are easier to:
+
+```text
+review
+debug
+revert
+understand
+cherry-pick
+```
+
+---
+
+## 4. Working Tree After Commit
+
+After the milestone:
+
+```text
+working tree clean
+```
+
+means there were no remaining tracked/untracked changes requiring attention at that point.
+
+Useful command:
+
+```bash
+git status
+```
+
+Expected clean-state idea:
+
+```text
+nothing to commit
+working tree clean
+```
+
+---
+
+# PART 214 — GITHUB REMOTE
+
+## 1. Public Repository Created
+
+Repository:
+
+```text
+SDET-Commerce-Automation
+```
+
+Remote repository:
+
+```text
+GitHub
+```
+
+Visibility:
+
+```text
+Public
+```
+
+It was intentionally created without generating another:
+
+```text
+README
+.gitignore
+license
+```
+
+because these already existed locally or were being managed from the local project.
+
+---
+
+## 2. Why Avoid Auto-Generated README?
+
+If GitHub creates an initial commit while local Git already has unrelated history:
+
+```text
+Local History
+      +
+Remote Initial Commit
+```
+
+can create unnecessary history reconciliation.
+
+Creating an empty remote allowed:
+
+```text
+existing local repository
+→ push directly
+```
+
+---
+
+## 3. Origin
+
+The remote name used is:
+
+```text
+origin
+```
+
+Conceptually:
+
+```text
+origin
+→ conventional alias for primary remote repository
+```
+
+It is not a Git keyword requiring GitHub specifically.
+
+---
+
+## 4. Verify Remote
+
+Command:
+
+```bash
+git remote -v
+```
+
+This displays:
+
+```text
+fetch remote
+push remote
+```
+
+Always verify before first push.
+
+Why?
+
+Because pushing to the wrong repository can expose:
+
+```text
+code
+history
+configuration
+```
+
+---
+
+# PART 215 — GITHUB CLI AUTHENTICATION
+
+## 1. Initial Push Authentication
+
+The repository used:
+
+```text
+HTTPS
+```
+
+for GitHub remote communication.
+
+Modern GitHub HTTPS authentication should not use the GitHub account password as the Git credential.
+
+---
+
+## 2. GitHub CLI
+
+GitHub CLI was installed:
+
+```bash
+gh
+```
+
+Version at setup time:
+
+```text
+2.100.0
+```
+
+---
+
+## 3. Authentication
+
+Authentication was completed using GitHub CLI's browser-based login flow.
+
+Conceptually:
+
+```text
+Terminal
+   ↓
+GitHub CLI
+   ↓
+Browser authorization
+   ↓
+GitHub account
+   ↓
+Authenticated Git operations
+```
+
+---
+
+## 4. Verify Authentication
+
+Useful command:
+
+```bash
+gh auth status
+```
+
+This can confirm:
+
+```text
+authenticated account
+Git protocol
+authentication status
+```
+
+Security rule:
+
+```text
+Never paste authentication tokens
+into project notes, source code,
+screenshots or GitHub issues.
+```
+
+---
+
+## 5. HTTPS vs SSH
+
+Both are valid GitHub authentication approaches.
+
+HTTPS:
+
+```text
+https://...
+```
+
+SSH:
+
+```text
+git@github.com:...
+```
+
+Our repository currently uses:
+
+```text
+HTTPS
+```
+
+No need to change to SSH only for appearance.
+
+---
+
+# PART 216 — FIRST PUSH
+
+## 1. Push Command
+
+The local `main` branch was pushed to GitHub.
+
+Result:
+
+```text
+main
+→ origin/main
+```
+
+The branch was also configured to track the remote branch.
+
+---
+
+## 2. Upstream Tracking
+
+Conceptually:
+
+```text
+local main
+    │
+    ▼
+origin/main
+```
+
+Once upstream is configured, future pushes can generally use:
+
+```bash
+git push
+```
+
+instead of repeatedly specifying:
+
+```text
+remote + branch
+```
+
+---
+
+## 3. First Push Result
+
+The important result was:
+
+```text
+[new branch] main -> main
+```
+
+and:
+
+```text
+branch 'main' set up to track 'origin/main'
+```
+
+This confirmed:
+
+```text
+local repository
+and
+GitHub repository
+```
+
+were connected successfully.
+
+---
+
+## 4. GitHub Verification
+
+After push, the public repository was checked for:
+
+```text
+README rendering
+source structure
+expected files
+absence of real .env files
+project milestone visibility
+```
+
+Publishing successfully is not enough.
+
+Always verify what the public user can actually see.
+
+---
+
+# PART 217 — CURRENT PROJECT STATUS
+
+## 1. Backend
+
+Completed:
+
+```text
+Java 17
+Spring Boot
+REST APIs
+PostgreSQL
+JPA
+JWT Authentication
+RBAC
+Swagger/OpenAPI
+externalized configuration
+```
+
+---
+
+## 2. Commerce Modules
+
+Completed:
+
+```text
+User Registration
+Login
+Profile
+
+Products
+Search
+Details
+Admin CRUD
+
+Cart
+Add
+Update
+Remove
+Clear
+
+Orders
+Create
+Get
+List
+Cancel
+
+Mock Payment
+
+Admin / RBAC
+```
+
+---
+
+## 3. API Automation
+
+Completed:
+
+```text
+Java
+REST Assured
+TestNG
+reusable request specification
+authentication helper
+environment switching
+test-data utilities
+cleanup
+database validation
+security testing
+RBAC testing
+Allure reporting
+request/response evidence
+secret sanitization
+```
+
+---
+
+## 4. Regression Baseline
+
+Current API regression:
+
+```text
+48 tests
+48 passed
+```
+
+This baseline is important.
+
+Future CI should not only ask:
+
+```text
+Did Maven return success?
+```
+
+It should also help confirm:
+
+```text
+Did the expected test suite actually execute?
+```
+
+---
+
+## 5. Allure
+
+Completed:
+
+```text
+TestNG integration
+environment metadata
+request attachment
+response attachment
+sensitive-data sanitization
+```
+
+Sensitive values are replaced in report evidence with:
+
+```text
+[REDACTED]
+```
+
+---
+
+## 6. Swagger/OpenAPI
+
+Completed:
+
+```text
+Swagger UI
+OpenAPI document
+Bearer JWT security scheme
+Authorize functionality
+```
+
+This provides interactive API exploration alongside automated regression.
+
+---
+
+## 7. Database
+
+Current:
+
+```text
+PostgreSQL 16
+```
+
+runs using:
+
+```text
+Docker Compose
+```
+
+with persistent storage.
+
+---
+
+## 8. Git/GitHub
+
+Completed:
+
+```text
+Git repository
+.gitignore
+secret review
+professional milestone commit
+GitHub public repository
+HTTPS authentication
+first push
+upstream tracking
+```
+
+---
+
+## 9. Documentation
+
+Current documentation includes:
+
+```text
+README.md
+
+docs/learning-notes/
+    SDET-Learning-Notes.md
+    Linux-Git-Real-World-Notes.md
+    SDET-Engineering-Tooling-Notes.md
+```
+
+Each file has a different purpose:
+
+```text
+SDET-Learning-Notes
+→ project learning journey
+
+Linux-Git-Real-World-Notes
+→ Linux/Git/CI troubleshooting knowledge
+
+SDET-Engineering-Tooling-Notes
+→ Maven/Java/Spring/HTTP/Docker/Node/config/tooling
+```
+
+Do not merge everything into one document.
+
+---
+
+# PART 218 — NEXT PHASE: REACT + TYPESCRIPT
+
+## 1. Why Frontend Is Next
+
+Current system already has:
+
+```text
+Backend
+API
+Database
+Security
+API Automation
+Reporting
+Documentation
+GitHub
+```
+
+But there is currently no real user-facing web application.
+
+Therefore next:
+
+```text
+React + TypeScript frontend
+```
+
+---
+
+## 2. Future Architecture
+
+```text
+               React + TypeScript
+                       │
+                       │ HTTP
+                       ▼
+                  Spring Boot
+                       │
+                       ▼
+                  PostgreSQL
+```
+
+Testing:
+
+```text
+Playwright
+    │
+    ▼
+React UI
+    │
+    ▼
+Spring Boot API
+    │
+    ▼
+PostgreSQL
+```
+
+Existing API automation remains:
+
+```text
+REST Assured
+     │
+     ▼
+Spring Boot
+```
+
+---
+
+## 3. Frontend Technology
+
+Planned:
+
+```text
+React
+TypeScript
+Vite
+React Router
+Axios
+simple CSS
+```
+
+Avoid adding unnecessary UI libraries initially.
+
+Goal:
+
+```text
+functional
+clean
+testable
+professional
+```
+
+not:
+
+```text
+complex visual design
+```
+
+---
+
+## 4. Planned Screens
+
+```text
+Login
+
+Register
+
+Products
+
+Product Search
+
+Product Details
+
+Cart
+
+Checkout / Create Order
+
+Orders
+
+Payment
+
+Admin Product Management
+```
+
+---
+
+## 5. RBAC in Frontend
+
+Normal user:
+
+```text
+shopping functionality
+```
+
+Admin:
+
+```text
+product management functionality
+```
+
+Important:
+
+```text
+Hiding an admin button in UI
+is NOT authorization.
+```
+
+Backend RBAC remains the real security boundary.
+
+UI controls only improve user experience.
+
+---
+
+## 6. Frontend Environment Configuration
+
+Future example:
+
+```text
+VITE_API_BASE_URL
+```
+
+Local development value can point to:
+
+```text
+http://localhost:8080
+```
+
+Important:
+
+```text
+VITE_* values are client-side.
+```
+
+Therefore never put:
+
+```text
+JWT signing secret
+database password
+private API credential
+```
+
+inside frontend environment variables.
+
+---
+
+## 7. CORS
+
+Future frontend development may run on:
+
+```text
+http://localhost:5173
+```
+
+while backend runs on:
+
+```text
+http://localhost:8080
+```
+
+These are different origins because:
+
+```text
+port differs
+```
+
+Therefore browser communication may require:
+
+```text
+CORS configuration
+```
+
+This will be implemented only when needed and verified against the actual frontend/backend behavior.
+
+---
+
+## 8. Authentication
+
+Frontend will:
+
+```text
+Login
+   ↓
+Receive JWT
+   ↓
+Use token for protected API requests
+```
+
+For portfolio/demo implementation, token storage strategy will be chosen explicitly.
+
+If localStorage is used:
+
+```text
+simple
+but accessible to JavaScript
+```
+
+which creates an XSS-related security trade-off.
+
+Production alternatives may include:
+
+```text
+HttpOnly
+Secure
+SameSite cookies
+```
+
+depending on architecture.
+
+---
+
+## 9. Why TypeScript?
+
+TypeScript provides:
+
+```text
+static typing
+better IDE support
+safer refactoring
+clear API models
+```
+
+It is especially useful when building:
+
+```text
+React frontend
++
+Playwright automation
+```
+
+because the same ecosystem reinforces JavaScript/TypeScript knowledge.
+
+---
+
+## 10. Why React Before Playwright?
+
+Do not create UI automation before having the actual UI.
+
+Correct sequence:
+
+```text
+Backend
+    ↓
+API Stable
+    ↓
+Frontend
+    ↓
+Critical UI Flows
+    ↓
+Playwright
+```
+
+This prevents us from creating:
+
+```text
+fake UI automation
+or
+portfolio-only test scripts
+```
+
+without a real system under test.
+
+---
+
+## 11. Playwright Strategy Later
+
+Playwright should primarily cover:
+
+```text
+Login
+Registration
+Product browsing
+Search
+Cart
+Checkout
+Order creation
+Payment
+Admin product flow
+```
+
+Business-rule-heavy validation should continue to stay mainly in:
+
+```text
+API tests
+```
+
+This maintains a healthy test pyramid.
+
+---
+
+## 12. UI + API Hybrid Testing
+
+Later we can use:
+
+```text
+API
+→ prepare state
+
+UI
+→ validate user experience
+
+API/DB
+→ verify resulting state
+```
+
+Example:
+
+```text
+API creates product
+      ↓
+Playwright searches product
+      ↓
+UI adds product to cart
+      ↓
+UI creates order
+      ↓
+API/DB verifies order
+```
+
+This is much stronger than writing only isolated UI scripts.
+
+---
+
+## 13. Frontend Must Use Real Backend
+
+Important project rule:
+
+```text
+No fake static frontend data
+for core commerce flows.
+```
+
+Frontend should consume the actual:
+
+```text
+Spring Boot APIs
+```
+
+we already built.
+
+That makes the project truly:
+
+```text
+end-to-end
+```
+
+---
+
+## 14. Before Creating Frontend
+
+First verify installed runtime:
+
+```bash
+node --version
+npm --version
+```
+
+Do not scaffold anything until these commands are checked.
+
+Then choose a compatible Vite/React setup.
+
+---
+
+## 15. Next Immediate Practical Step
+
+From project root:
+
+```bash
+cd ~/SDET-Commerce-Automation
+```
+
+Verify location:
+
+```bash
+pwd
+```
+
+Then:
+
+```bash
+node --version
+npm --version
+```
+
+At this point:
+
+```text
+STOP.
+```
+
+Do not run Vite creation command yet.
+
+First understand:
+
+```text
+which Node version
+which npm version
+```
+
+are actually installed.
+
+Then we will create:
+
+```text
+frontend/
+```
+
+cleanly without disturbing:
+
+```text
+backend/
+api-automation/
+docs/
+```
+
+---
+
+# END OF PART 218
+
+# GITHUB MILESTONE DOCUMENTATION COMPLETE
