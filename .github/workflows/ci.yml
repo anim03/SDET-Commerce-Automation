@@ -704,6 +704,7 @@ jobs:
       - name: Run k6 Performance Smoke Test
         run: |
           mkdir -p performance-tests/reports
+          chmod 777 performance-tests/reports
 
           docker run \
             --rm \
@@ -717,6 +718,15 @@ jobs:
             run \
             --summary-export=/work/performance-tests/reports/smoke-summary.json \
             /work/performance-tests/scenarios/smoke.js
+
+          echo ""
+          echo "===== K6 GENERATED REPORT ====="
+          ls -lah performance-tests/reports
+
+          test -f performance-tests/reports/smoke-summary.json
+
+          echo ""
+          echo "k6 summary artifact generated successfully."
 
       - name: Upload k6 Performance Results
         if: always()
