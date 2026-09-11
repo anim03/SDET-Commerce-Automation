@@ -9,7 +9,12 @@ on:
     branches:
       - main
 
+
 jobs:
+
+  # ============================================================
+  # BACKEND
+  # ============================================================
 
   backend:
     name: Backend Build & Test
@@ -57,6 +62,10 @@ jobs:
         run: ./mvnw clean test
 
 
+  # ============================================================
+  # FRONTEND
+  # ============================================================
+
   frontend:
     name: Frontend Lint & Build
     runs-on: ubuntu-latest
@@ -85,6 +94,10 @@ jobs:
         run: npm run build
 
 
+  # ============================================================
+  # DOCKER BUILD VALIDATION
+  # ============================================================
+
   docker:
     name: Docker Build Validation
     runs-on: ubuntu-latest
@@ -106,6 +119,10 @@ jobs:
       - name: Build Docker Images
         run: docker compose build
 
+
+  # ============================================================
+  # REST ASSURED API AUTOMATION
+  # ============================================================
 
   api-automation:
     name: REST Assured API Automation
@@ -161,8 +178,7 @@ jobs:
       - name: Start Backend
         working-directory: backend
         run: |
-          ./mvnw spring-boot:run \
-            > ../backend-ci.log 2>&1 &
+          ./mvnw spring-boot:run > ../backend-ci.log 2>&1 &
           echo $! > ../backend-ci.pid
 
       - name: Wait for Backend
@@ -289,3 +305,291 @@ jobs:
           name: api-backend-log
           path: backend-ci.log
           if-no-files-found: ignore
+
+
+  # ============================================================
+  # PLAYWRIGHT UI AUTOMATION
+  # ============================================================
+
+  ui-automation:
+    name: Playwright UI Automation
+    runs-on: ubuntu-latest
+
+    env:
+      DB_NAME: sdetcommerce
+      DB_USERNAME: sdetuser
+      DB_PASSWORD: sdetpassword
+
+      JWT_SECRET: 012345678901234567890123456789012345678901234567890123456789abcd
+      JWT_EXPIRATION_MS: 3600000
+
+      TEST_ENV: local
+
+      LOCAL_UI_BASE_URL: http://localhost:5173
+      LOCAL_API_BASE_URL: http://localhost:8080
+
+      TEST_USER_EMAIL: ci-ui-user@sdetcommerce.test
+      TEST_USER_PASSWORD: CiUiUser@123
+
+      ADMIN_USER_EMAIL: ci-ui-admin@sdetcommerce.test
+      ADMIN_USER_PASSWORD: CiUiAdmin@123
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+
+      # --------------------------------------------------------
+      # Start complete Dockerized application
+      # --------------------------------------------------------
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+
+      - name: Start Dockerized Application
+        run: docker compose up -d --build
+
+
+      # --------------------------------------------------------
+      # Wait for PostgreSQL / Backend / Frontend
+      # --------------------------------------------------------
+
+      - name: Wait for Backend
+        run: |
+          echo "Waiting for backend..."
+
+          for i in {1..60}; do
+            STATUS=$(curl \
+              --silent \
+              --output /dev/null \
+              --write-out "%{http_code}" \
+              http://localhost:8080/v3/api-docs || true)
+
+            if [ "$STATUS" = "200" ]; then
+              echo "Backend is ready."
+              exit 0
+            fi
+
+            echo "Backend attempt $i/60 - HTTP $STATUS"
+            sleep 2
+          done
+
+          echo "Backend failed to become ready."
+
+          docker compose ps
+          docker compose logs backend
+
+          exit 1
+
+
+      - name: Wait for Frontend
+        run: |
+          echo "Waiting for frontend..."
+
+          for i in {1..60}; do
+            STATUS=$(curl \
+              --silent \
+              --output /dev/null \
+              --write-out "%{http_code}" \
+              http://localhost:5173 || true)
+
+            if [ "$STATUS" = "200" ]; then
+              echo "Frontend is ready."
+              exit 0
+            fi
+
+            echo "Frontend attempt $i/60 - HTTP $STATUS"
+            sleep 2
+          done
+
+          echo "Frontend failed to become ready."
+
+          docker compose ps
+          docker compose logs frontend
+
+          exit 1
+
+
+      # --------------------------------------------------------
+      # Bootstrap normal Playwright user
+      # --------------------------------------------------------
+
+      - name: Register Playwright User
+        run: |
+          STATUS=$(curl \
+            --silent \
+            --output ui-user-response.json \
+            --write-out "%{http_code}" \
+            --request POST \
+            http://localhost:8080/api/users/register \
+            --header "Content-Type: application/json" \
+            --data '{
+              "name": "Playwright CI User",
+              "email": "ci-ui-user@sdetcommerce.test",
+              "password": "CiUiUser@123"
+            }')
+
+          echo "Playwright user registration status: $STATUS"
+
+          if [ "$STATUS" != "201" ]; then
+            cat ui-user-response.json
+            exit 1
+          fi
+
+
+      # --------------------------------------------------------
+      # Bootstrap admin Playwright user
+      # --------------------------------------------------------
+
+      - name: Register Playwright Admin
+        run: |
+          STATUS=$(curl \
+            --silent \
+            --output ui-admin-response.json \
+            --write-out "%{http_code}" \
+            --request POST \
+            http://localhost:8080/api/users/register \
+            --header "Content-Type: application/json" \
+            --data '{
+              "name": "Playwright CI Admin",
+              "email": "ci-ui-admin@sdetcommerce.test",
+              "password": "CiUiAdmin@123"
+            }')
+
+          echo "Playwright admin registration status: $STATUS"
+
+          if [ "$STATUS" != "201" ]; then
+            cat ui-admin-response.json
+            exit 1
+          fi
+
+
+      # --------------------------------------------------------
+      # Promote second user to ROLE_ADMIN
+      # --------------------------------------------------------
+
+      - name: Promote Playwright User to Admin
+        run: |
+          docker compose exec -T postgres \
+            psql \
+            -U "$DB_USERNAME" \
+            -d "$DB_NAME" \
+            -v ON_ERROR_STOP=1 \
+            -c "UPDATE users
+                SET role = 'ROLE_ADMIN'
+                WHERE email = 'ci-ui-admin@sdetcommerce.test';"
+
+          ADMIN_COUNT=$(docker compose exec -T postgres \
+            psql \
+            -U "$DB_USERNAME" \
+            -d "$DB_NAME" \
+            -tAc "SELECT COUNT(*)
+                  FROM users
+                  WHERE email = 'ci-ui-admin@sdetcommerce.test'
+                  AND role = 'ROLE_ADMIN';" \
+            | tr -d '[:space:]')
+
+          if [ "$ADMIN_COUNT" != "1" ]; then
+            echo "Playwright admin promotion failed."
+            exit 1
+          fi
+
+          echo "Playwright admin role verified."
+
+
+      # --------------------------------------------------------
+      # Node / Playwright
+      # --------------------------------------------------------
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ui-automation/package-lock.json
+
+
+      - name: Install UI Automation Dependencies
+        working-directory: ui-automation
+        run: npm ci
+
+
+      - name: Install Chromium
+        working-directory: ui-automation
+        run: npx playwright install --with-deps chromium
+
+
+      # --------------------------------------------------------
+      # StorageState directory
+      # --------------------------------------------------------
+
+      - name: Prepare Authentication Directory
+        working-directory: ui-automation
+        run: |
+          mkdir -p auth
+          rm -f auth/user.json
+          rm -f auth/admin.json
+
+
+      # --------------------------------------------------------
+      # Run Playwright
+      # --------------------------------------------------------
+
+      - name: Run Playwright Test Suite
+        working-directory: ui-automation
+        run: npx playwright test
+
+
+      # --------------------------------------------------------
+      # Artifacts
+      # --------------------------------------------------------
+
+      - name: Upload Playwright HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: ui-automation/playwright-report
+          if-no-files-found: warn
+
+
+      - name: Upload Playwright Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: ui-automation/test-results
+          if-no-files-found: warn
+
+
+      - name: Upload Docker Logs on Failure
+        if: failure()
+        run: |
+          mkdir -p ci-docker-logs
+
+          docker compose logs postgres \
+            > ci-docker-logs/postgres.log 2>&1 || true
+
+          docker compose logs backend \
+            > ci-docker-logs/backend.log 2>&1 || true
+
+          docker compose logs frontend \
+            > ci-docker-logs/frontend.log 2>&1 || true
+
+
+      - name: Upload Docker Failure Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-docker-logs
+          path: ci-docker-logs
+          if-no-files-found: ignore
+
+
+      # --------------------------------------------------------
+      # Cleanup
+      # --------------------------------------------------------
+
+      - name: Stop Dockerized Application
+        if: always()
+        run: docker compose down -v
