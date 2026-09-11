@@ -1,7 +1,11 @@
 package com.sdetcommerce.backend.config;
 
 import com.sdetcommerce.backend.security.JwtAuthenticationFilter;
+
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,6 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
@@ -27,8 +34,27 @@ public class SecurityConfig {
             HttpSecurity http) throws Exception {
 
         http
+                /*
+                 * Enable centralized CORS configuration.
+                 *
+                 * React frontend:
+                 * http://localhost:5173
+                 */
+                .cors(cors ->
+                        cors.configurationSource(
+                                corsConfigurationSource()
+                        )
+                )
+
+                /*
+                 * CSRF is disabled because this application
+                 * uses stateless JWT authentication.
+                 */
                 .csrf(csrf -> csrf.disable())
 
+                /*
+                 * No server-side HTTP session.
+                 */
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
@@ -38,7 +64,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         /*
-                         * Public authentication endpoints
+                         * Browser CORS preflight requests.
+                         */
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        )
+                        .permitAll()
+
+                        /*
+                         * Public authentication endpoints.
                          */
                         .requestMatchers(
                                 "/api/users/register",
@@ -48,7 +83,7 @@ public class SecurityConfig {
                         .permitAll()
 
                         /*
-                         * Swagger / OpenAPI endpoints
+                         * Swagger / OpenAPI endpoints.
                          */
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -59,7 +94,7 @@ public class SecurityConfig {
 
                         /*
                          * Product READ:
-                         * Any authenticated user
+                         * Any authenticated user.
                          */
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -69,7 +104,7 @@ public class SecurityConfig {
 
                         /*
                          * Product CREATE:
-                         * ADMIN only
+                         * ADMIN only.
                          */
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -79,7 +114,7 @@ public class SecurityConfig {
 
                         /*
                          * Product UPDATE:
-                         * ADMIN only
+                         * ADMIN only.
                          */
                         .requestMatchers(
                                 HttpMethod.PUT,
@@ -89,7 +124,7 @@ public class SecurityConfig {
 
                         /*
                          * Product DELETE:
-                         * ADMIN only
+                         * ADMIN only.
                          */
                         .requestMatchers(
                                 HttpMethod.DELETE,
@@ -98,8 +133,8 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         /*
-                         * Cart, Orders, Payments etc.
-                         * Authentication required
+                         * Cart, Orders, Payments, Profile etc.
+                         * Authentication required.
                          */
                         .anyRequest()
                         .authenticated()
@@ -109,13 +144,15 @@ public class SecurityConfig {
                         exception
 
                                 /*
-                                 * No token / invalid token
+                                 * Missing / invalid JWT
                                  * -> 401 Unauthorized
                                  */
                                 .authenticationEntryPoint(
-                                        (request,
-                                         response,
-                                         authException) -> {
+                                        (
+                                                request,
+                                                response,
+                                                authException
+                                        ) -> {
 
                                             response.setStatus(
                                                     HttpServletResponse
@@ -129,9 +166,11 @@ public class SecurityConfig {
                                  * -> 403 Forbidden
                                  */
                                 .accessDeniedHandler(
-                                        (request,
-                                         response,
-                                         accessDeniedException) -> {
+                                        (
+                                                request,
+                                                response,
+                                                accessDeniedException
+                                        ) -> {
 
                                             response.setStatus(
                                                     HttpServletResponse
@@ -147,5 +186,52 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    /*
+     * CORS configuration for the React development frontend.
+     *
+     * This allows the browser application running on
+     * localhost:5173 to communicate with Spring Boot
+     * running on localhost:8080.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                List.of(
+                        "http://localhost:5173"
+                )
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of(
+                        "Authorization",
+                        "Content-Type"
+                )
+        );
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
+
+        return source;
     }
 }
