@@ -19478,3 +19478,1770 @@ docs/
 # END OF PART 218
 
 # GITHUB MILESTONE DOCUMENTATION COMPLETE
+---
+
+# PART 219 — FRONTEND TO CI/CD: COMPLETE END-TO-END SDET MILESTONE
+
+This part documents the practical evolution of the project from a backend/API automation project into a complete full-stack Quality Engineering system.
+
+The implemented architecture became:
+
+React + TypeScript Frontend
+            ↓
+Spring Boot REST API
+            ↓
+PostgreSQL Database
+
+REST Assured + TestNG
+            ↓
+API + DB Validation
+
+Playwright + TypeScript
+            ↓
+Browser UI Validation
+
+Docker Compose
+            ↓
+Frontend + Backend + PostgreSQL
+
+GitHub Actions
+            ↓
+Continuous Quality Validation
+
+Important learning:
+
+A Senior SDET does not only write tests.
+
+A Senior SDET understands how the application,
+automation frameworks, infrastructure,
+test data and CI pipeline work together.
+
+---
+
+# SECTION 2590 — REACT + TYPESCRIPT FRONTEND IMPLEMENTATION
+
+## 2805. Why We Added a Frontend
+
+Initially the project contained:
+
+Spring Boot backend
+REST APIs
+PostgreSQL
+REST Assured automation
+
+That was strong for API engineering, but it was not yet a complete end-to-end commerce application.
+
+We therefore added:
+
+React
+TypeScript
+Vite
+
+The frontend communicates with the real Spring Boot backend.
+
+Important rule followed:
+
+No fake static data for core commerce flows.
+
+The UI consumes the actual APIs.
+
+## 2806. Frontend Business Flows Implemented
+
+The frontend now supports:
+
+Login
+Dashboard
+Products
+Product Search
+Product Details
+Cart
+Checkout
+Order Creation
+Order Details
+Mock Payment
+Admin Product Management
+Role-Based Admin Access
+
+This means the same business system can now be tested at multiple layers:
+
+UI
+API
+Database
+
+## 2807. Authentication in the Frontend
+
+The frontend authenticates against the Spring Boot login API.
+
+High-level flow:
+
+User enters credentials
+        ↓
+React sends login request
+        ↓
+Spring Boot validates user
+        ↓
+JWT returned
+        ↓
+Frontend stores authentication state
+        ↓
+Protected routes become accessible
+
+The frontend also derives the user's role so that ADMIN-specific functionality can be protected.
+
+## 2808. RBAC in the UI
+
+The application contains two important roles:
+
+ROLE_USER
+ROLE_ADMIN
+
+Normal users can use commerce functionality.
+
+Admin users additionally receive access to product-management functionality.
+
+But an important security principle is:
+
+UI restriction is not security by itself.
+
+Real authorization remains enforced by Spring Security on the backend.
+
+For example:
+
+USER
+→ POST /api/products
+→ 403 Forbidden
+
+ADMIN
+→ POST /api/products
+→ allowed
+
+The UI simply provides the correct user experience on top of backend authorization.
+
+---
+
+# SECTION 2591 — PLAYWRIGHT + TYPESCRIPT UI AUTOMATION
+
+## 2809. Why Playwright Was Added
+
+REST Assured validates backend behaviour.
+
+Playwright validates:
+
+what the actual user experiences in the browser
+
+The purpose was not to duplicate every API test at UI level.
+
+Instead:
+
+API tests
+→ broad business-rule coverage
+
+UI tests
+→ critical user journeys
+
+This maintains the test pyramid.
+
+## 2810. Playwright Framework Structure
+
+The Playwright framework was created separately under:
+
+ui-automation/
+
+Important framework concepts include:
+
+Page Object Model
+Reusable fixtures
+Environment configuration
+Authentication setup projects
+Storage State
+Dynamic test data
+API-assisted setup
+Role-specific browser projects
+Failure artifacts
+
+## 2811. Page Object Model
+
+Reusable page classes were created for pages such as:
+
+LoginPage
+DashboardPage
+ProductsPage
+ProductDetailsPage
+CartPage
+CheckoutPage
+OrderDetailsPage
+PaymentPage
+AdminProductsPage
+
+Tests therefore focus mainly on:
+
+business intent
+
+rather than repeatedly containing low-level locators.
+
+Example concept:
+
+Test:
+
+open products
+search product
+open product
+add to cart
+
+Page Object:
+
+contains the locators and UI operations
+
+Benefits:
+
+maintainability
+readability
+reuse
+lower duplication
+
+---
+
+# SECTION 2592 — PLAYWRIGHT AUTHENTICATION ARCHITECTURE
+
+## 2812. The Problem With Logging In Before Every Test
+
+A naive UI framework might do:
+
+open login page
+enter credentials
+login
+run test
+
+for every test.
+
+This creates:
+
+unnecessary execution time
+duplicate login logic
+more opportunities for flaky failures
+
+We instead implemented Playwright:
+
+storageState
+
+## 2813. User and Admin Setup Projects
+
+Two authentication setup projects were created:
+
+setup-user
+setup-admin
+
+They authenticate once and save browser state into:
+
+auth/user.json
+auth/admin.json
+
+Then the browser projects use those states:
+
+chromium-user
+chromium-admin
+
+Conceptually:
+
+setup-user
+    ↓
+auth/user.json
+    ↓
+chromium-user tests
+
+setup-admin
+    ↓
+auth/admin.json
+    ↓
+chromium-admin tests
+
+## 2814. Why Auth Files Must Not Be Committed
+
+Storage-state files may contain authentication information.
+
+Therefore:
+
+auth/user.json
+auth/admin.json
+
+must not be committed to Git.
+
+This is another example of:
+
+test automation security hygiene
+
+---
+
+# SECTION 2593 — PLAYWRIGHT ENVIRONMENT SWITCHING
+
+## 2815. Environment-Aware UI Automation
+
+The Playwright framework supports environment configuration.
+
+Conceptually:
+
+TEST_ENV=local
+TEST_ENV=qa
+TEST_ENV=stage
+
+Environment-specific configuration separates:
+
+UI Base URL
+API Base URL
+credentials
+
+This prevents environment URLs from being scattered across test files.
+
+## 2816. Why UI and API URLs Are Both Needed
+
+The Playwright framework does more than browser automation.
+
+It also uses APIs for efficient test setup.
+
+Therefore it needs:
+
+UI URL
+
+and
+
+API URL
+
+Example:
+
+API
+→ create test product
+
+UI
+→ verify product is visible
+
+This is an example of:
+
+UI + API hybrid automation
+
+---
+
+# SECTION 2594 — DYNAMIC TEST DATA
+
+## 2817. Why Fixed Product Data Is Dangerous
+
+Initially UI tests could depend on an already-existing product.
+
+That can work locally because the developer database may contain data.
+
+But:
+
+local DB != clean CI DB
+
+A reliable automation framework should not assume that arbitrary test data already exists.
+
+## 2818. Dynamic Product Creation
+
+A reusable helper was introduced for product test data.
+
+Concept:
+
+Playwright test
+      ↓
+Admin API authentication
+      ↓
+POST /api/products
+      ↓
+Create unique product
+      ↓
+Perform UI validation
+      ↓
+Delete test product
+
+Product names are unique.
+
+Conceptually:
+
+PW Product + unique timestamp/value
+
+This prevents tests from depending on manually prepared database records.
+
+## 2819. Why API Setup Is Better Than UI Setup
+
+Suppose the purpose of a test is:
+
+Verify user can search for a product.
+
+Creating the product through the Admin UI first would add unnecessary UI steps.
+
+Better:
+
+API creates prerequisite state
+        ↓
+UI validates search behaviour
+
+This makes tests:
+
+faster
+more focused
+less flaky
+more independent
+
+---
+
+# SECTION 2595 — UI + API HYBRID TESTING
+
+## 2820. Hybrid Testing Pattern
+
+A powerful SDET pattern is:
+
+API
+→ arrange test state
+
+UI
+→ perform user behaviour
+
+API / DB
+→ validate resulting state when required
+
+This combines the strengths of different testing layers.
+
+## 2821. Example From This Project
+
+For product-related flows:
+
+Admin API
+→ create unique product
+
+Playwright
+→ navigate to product
+
+Playwright
+→ interact with product/cart/order
+
+Cleanup
+→ remove temporary state when safe
+
+The UI test does not waste browser time preparing everything.
+
+---
+
+# SECTION 2596 — PLAYWRIGHT COVERAGE
+
+## 2822. Current UI Automation Coverage
+
+The framework currently contains coverage for:
+
+Authentication
+Products
+Product Search
+Product Details
+Cart
+Clear Cart
+Order + Payment
+Admin RBAC
+Admin Product Management
+
+The suite contains:
+
+setup-user
+setup-admin
+chromium-user tests
+chromium-admin tests
+
+At the completed CI milestone:
+
+11 Playwright test/setup entries
+
+were discovered by Playwright.
+
+## 2823. Tags
+
+Tests use tags such as:
+
+@smoke
+@regression
+@products
+@cart
+@orders
+@payment
+@admin
+@rbac
+@auth
+
+This allows targeted execution.
+
+Examples:
+
+npm run test:smoke
+
+npx playwright test --grep "@regression"
+
+---
+
+# SECTION 2597 — PLAYWRIGHT FAILURE EVIDENCE
+
+## 2824. Failure Diagnostics
+
+The Playwright configuration captures useful debugging evidence.
+
+On failure we can retain:
+
+Screenshot
+Video
+Trace
+HTML report
+Error context
+
+This is important in CI because:
+
+you cannot physically watch
+the GitHub runner browser
+
+Evidence must therefore be collected automatically.
+
+## 2825. CI Retry Strategy
+
+In CI:
+
+retries = 2
+
+Locally:
+
+retries = 0
+
+Why?
+
+CI environments may occasionally experience infrastructure timing variation.
+
+But retries should never be used to hide a genuine defect.
+
+Rule:
+
+Retry helps diagnose instability.
+
+Retry is not a substitute for fixing flaky tests.
+
+## 2826. Worker Strategy
+
+The framework currently uses:
+
+1 worker
+
+This is intentional while tests share some application/database/user state.
+
+Running everything aggressively in parallel before proper isolation can create:
+
+cart collisions
+shared-user conflicts
+data races
+cleanup conflicts
+
+Future optimization can increase parallelism after stronger test isolation.
+
+---
+
+# SECTION 2598 — FULL APPLICATION DOCKERIZATION
+
+## 2827. Why Dockerize the Full Application
+
+Before Dockerization, components were started independently.
+
+For example:
+
+PostgreSQL
+Spring Boot
+React development server
+
+Docker Compose gives us a reproducible application stack.
+
+Final concept:
+
+Docker Compose
+   |
+   +-- PostgreSQL
+   |
+   +-- Spring Boot Backend
+   |
+   +-- React/Nginx Frontend
+
+## 2828. Backend Docker Image
+
+The backend uses a multi-stage Docker build.
+
+Concept:
+
+Stage 1
+Java JDK
+Maven build
+create JAR
+
+        ↓
+
+Stage 2
+Java runtime
+copy JAR
+run application
+
+Why multi-stage?
+
+Because the runtime image does not need the entire build environment.
+
+Benefits:
+
+cleaner runtime
+smaller image
+separation of build and execution
+
+## 2829. Frontend Docker Image
+
+The frontend also uses a multi-stage build.
+
+Concept:
+
+Node.js
+   ↓
+npm ci
+   ↓
+npm run build
+   ↓
+Vite dist/
+
+        ↓
+
+Nginx
+   ↓
+serve production frontend
+
+Node is needed to build the React application.
+
+Nginx serves the resulting static production files.
+
+## 2830. SPA Routing With Nginx
+
+React uses client-side routing.
+
+Therefore Nginx needs SPA fallback behaviour.
+
+Concept:
+
+request /orders/123
+
+if static file does not exist
+
+→ return index.html
+
+→ React Router handles route
+
+Without this configuration, directly opening frontend routes can return:
+
+404
+
+---
+
+# SECTION 2599 — DOCKER COMPOSE NETWORKING
+
+## 2831. Host vs Container Networking
+
+This was an important practical concept.
+
+From the host machine:
+
+PostgreSQL
+→ localhost:5432
+
+Backend
+→ localhost:8080
+
+Frontend
+→ localhost:5173
+
+But from the backend container:
+
+localhost
+
+means:
+
+the backend container itself
+
+It does NOT mean the PostgreSQL container.
+
+Therefore backend connects using Docker service DNS:
+
+postgres:5432
+
+Concept:
+
+Backend container
+      ↓
+postgres:5432
+      ↓
+PostgreSQL container
+
+## 2832. Docker Service Names
+
+Docker Compose provides internal DNS using service names.
+
+Therefore:
+
+postgres
+
+can act as the hostname inside the Compose network.
+
+This removes the need to know the database container's dynamic IP address.
+
+---
+
+# SECTION 2600 — DOCKER HEALTH CHECK
+
+## 2833. Why PostgreSQL Health Check Matters
+
+Container status:
+
+running
+
+does not necessarily mean:
+
+application ready
+
+PostgreSQL may require some time before accepting connections.
+
+Therefore a health check uses:
+
+pg_isready
+
+Backend startup can then depend on:
+
+PostgreSQL healthy
+
+rather than merely:
+
+PostgreSQL container started
+
+---
+
+# SECTION 2601 — DOCKER VOLUMES
+
+## 2834. PostgreSQL Persistence
+
+PostgreSQL uses a named Docker volume.
+
+This means:
+
+docker compose down
+
+stops/removes containers but preserves the named database volume.
+
+However:
+
+docker compose down -v
+
+also removes the named volume.
+
+Therefore:
+
+-v can delete local database data.
+
+Use it intentionally.
+
+---
+
+# SECTION 2602 — VERIFIED DOCKERIZED APPLICATION
+
+## 2835. Full Stack Validation
+
+After resolving the local port conflict, all three services successfully ran:
+
+PostgreSQL
+→ healthy
+
+Backend
+→ port 8080
+
+Frontend
+→ port 5173
+
+The browser application was then manually verified.
+
+This completed:
+
+Full Application Dockerization
+
+---
+
+# SECTION 2603 — GITHUB ACTIONS CI/CD
+
+## 2836. What GitHub Actions Does
+
+GitHub Actions allows automated workflows to run after repository events.
+
+For this project:
+
+push to main
+
+or
+
+pull request to main
+
+triggers the CI workflow.
+
+## 2837. Core GitHub Actions Concepts
+
+Important terms:
+
+Workflow
+→ complete automation definition
+
+Job
+→ major independent unit of work
+
+Step
+→ command/action inside a job
+
+Runner
+→ machine executing the job
+
+Service
+→ supporting container such as PostgreSQL
+
+Artifact
+→ output retained after execution
+
+---
+
+# SECTION 2604 — CI PIPELINE EVOLUTION
+
+## 2838. Phase 1
+
+Initial CI validated:
+
+Backend Build & Test
+
+Frontend Lint & Build
+
+Docker Build Validation
+
+This established basic continuous integration.
+
+## 2839. Phase 2
+
+Next we added:
+
+REST Assured API Automation
+
+The API job required more than simply:
+
+mvn test
+
+because CI starts with a fresh PostgreSQL database.
+
+---
+
+# SECTION 2605 — EPHEMERAL CI DATABASE
+
+## 2840. Local Database vs CI Database
+
+Local development DB may contain:
+
+users
+products
+historical orders
+test data
+
+A GitHub Actions PostgreSQL service starts fresh.
+
+Therefore:
+
+CI must create everything it requires.
+
+This is one of the most important lessons from this milestone.
+
+## 2841. CI User Bootstrap
+
+The API framework expects:
+
+normal user credentials
+
+admin user credentials
+
+The CI pipeline therefore:
+
+starts PostgreSQL
+        ↓
+starts Spring Boot
+        ↓
+registers normal user
+        ↓
+registers second user
+        ↓
+promotes second user to ROLE_ADMIN
+        ↓
+runs REST Assured tests
+
+## 2842. Why We Did Not Add Public Admin Registration
+
+Normal registration creates:
+
+ROLE_USER
+
+Instead of exposing something like:
+
+/register-admin
+
+only for test automation, CI promotes the dedicated temporary user in the ephemeral database.
+
+This preserves the production security model.
+
+Important principle:
+
+Do not weaken application security
+just to make automation easier.
+
+---
+
+# SECTION 2606 — API AUTOMATION IN CI
+
+## 2843. REST Assured Execution
+
+Once the CI database and users are ready:
+
+REST Assured
++
+TestNG
+
+run against the live Spring Boot application.
+
+This includes:
+
+API validation
+security validation
+RBAC validation
+database validation
+business-flow validation
+
+## 2844. CI API Result
+
+The API automation milestone successfully ran the existing suite in GitHub Actions.
+
+Current API regression:
+
+48 tests
+48 passed
+
+This proved that the framework works outside the developer laptop.
+
+That distinction matters.
+
+A framework that only works locally is incomplete.
+
+---
+
+# SECTION 2607 — ALLURE AND SUREFIRE CI ARTIFACTS
+
+## 2845. Why Upload Test Artifacts
+
+CI runners are temporary.
+
+When the runner disappears, local files disappear too.
+
+Therefore important results are uploaded as GitHub Actions artifacts.
+
+For API automation:
+
+Allure results
+Surefire reports
+
+are retained.
+
+## 2846. Why if: always() Matters
+
+Report upload should happen even if tests fail.
+
+Concept:
+
+tests fail
+     ↓
+still upload evidence
+
+Otherwise the moment we most need debugging information is the moment it disappears.
+
+---
+
+# SECTION 2608 — PLAYWRIGHT CI INTEGRATION
+
+## 2847. Full UI CI Architecture
+
+The Playwright CI job uses the Dockerized application.
+
+Flow:
+
+GitHub Runner
+      ↓
+Docker Compose
+      ↓
+PostgreSQL
+Spring Boot
+React/Nginx
+      ↓
+wait for backend
+      ↓
+wait for frontend
+      ↓
+create USER
+      ↓
+create ADMIN
+      ↓
+promote ROLE_ADMIN
+      ↓
+install Playwright Chromium
+      ↓
+setup-user
+setup-admin
+      ↓
+run browser tests
+      ↓
+upload reports/evidence
+
+## 2848. Why Readiness Checks Matter
+
+Starting Docker containers does not guarantee the application is immediately ready.
+
+Therefore CI polls:
+
+backend endpoint
+
+frontend endpoint
+
+before starting automation.
+
+This avoids:
+
+tests starting while application is still booting
+
+which is a common source of false failures.
+
+---
+
+# SECTION 2609 — PLAYWRIGHT CI ARTIFACTS
+
+## 2849. UI Failure Evidence
+
+The CI pipeline uploads:
+
+Playwright HTML report
+
+test-results
+
+Docker logs on failure
+
+Playwright test-results may contain:
+
+screenshots
+videos
+trace.zip
+error context
+
+This creates an evidence-driven debugging workflow.
+
+---
+
+# SECTION 2610 — REAL CI FAILURE FOUND
+
+## 2850. The Failure
+
+The first complete Playwright CI run produced:
+
+10 passed
+1 failed
+
+The failed test was:
+
+Products @smoke @products
+
+authenticated user can view products
+
+The failing assertion searched for:
+
+View Product
+
+button.
+
+Playwright reported:
+
+Expected: visible
+
+Error:
+element(s) not found
+
+Retries also failed.
+
+## 2851. Why This Was Interesting
+
+Locally the test had worked.
+
+CI failed.
+
+The immediate temptation could have been:
+
+increase timeout
+
+But that would not solve the actual problem.
+
+The element was not slow.
+
+The element did not exist.
+
+This distinction is critical.
+
+---
+
+# SECTION 2611 — ROOT CAUSE ANALYSIS
+
+## 2852. Root Cause
+
+The products smoke test assumed:
+
+at least one product already exists
+
+That assumption happened to be true in the local development database.
+
+But GitHub Actions created a:
+
+fresh PostgreSQL database
+
+Therefore the Products page could load correctly while containing:
+
+zero products
+
+No product means:
+
+no View Product button
+
+Therefore the assertion failed.
+
+## 2853. The Hidden Dependency
+
+The real bug was not:
+
+Playwright timeout
+
+and not:
+
+Docker
+
+and not:
+
+GitHub Actions
+
+It was:
+
+hidden dependency on pre-existing test data
+
+This is exactly the type of issue CI is supposed to expose.
+
+---
+
+# SECTION 2612 — CORRECT FIX
+
+## 2854. What We Did Not Do
+
+We did NOT:
+
+increase timeout blindly
+
+skip the test
+
+delete the assertion
+
+hardcode a product into CI DB
+
+manually seed random local data
+
+Those approaches would hide the underlying test-design problem.
+
+## 2855. What We Did
+
+The smoke test was changed to:
+
+create its own product dynamically
+        ↓
+open Products UI
+        ↓
+verify that exact product
+        ↓
+verify View Product action
+        ↓
+clean up product
+
+This made the test:
+
+self-contained
+repeatable
+environment-independent
+CI-safe
+
+---
+
+# SECTION 2613 — FINAL CI RESULT
+
+## 2856. Final Pipeline
+
+After fixing the static-data dependency, GitHub Actions reran successfully.
+
+Final result:
+
+Backend Build & Test
+        PASS
+
+Frontend Lint & Build
+        PASS
+
+Docker Build Validation
+        PASS
+
+REST Assured API Automation
+        PASS
+
+Playwright UI Automation
+        PASS
+
+The complete workflow became green.
+
+## 2857. What This Proves
+
+The project can now automatically validate:
+
+Backend compilation/tests
+Frontend lint/build
+Docker image construction
+REST API behaviour
+Database state
+Authentication
+Authorization / RBAC
+Critical browser journeys
+User role
+Admin role
+Full Dockerized application integration
+
+on a clean GitHub-hosted runner.
+
+---
+
+# SECTION 2614 — CI FAILURE DEBUGGING METHOD
+
+## 2858. Practical Debugging Sequence
+
+When a CI UI test fails:
+
+1. Identify failed job
+2. Identify failed step
+3. Identify exact test
+4. Read assertion error
+5. Check retries
+6. Inspect screenshot
+7. Inspect video
+8. Inspect trace
+9. Inspect application/container logs if required
+10. Determine root cause
+11. Fix cause, not symptom
+12. Push and rerun CI
+
+## 2859. Example From This Project
+
+Observed:
+
+Locator:
+View Product button
+
+Expected:
+visible
+
+Actual:
+element not found
+
+Question:
+
+Is the element slow,
+or does it not exist?
+
+Investigation showed:
+
+it did not exist
+
+Why?
+
+fresh DB had no product
+
+Correct engineering response:
+
+create deterministic test data
+
+not:
+
+increase timeout
+
+---
+
+# SECTION 2615 — IMPORTANT SENIOR SDET LESSON
+
+## 2860.
+
+A weak automation mindset asks:
+
+How can I make this test green?
+
+A stronger SDET mindset asks:
+
+Why did this test fail only in this environment?
+
+What dependency did the test assume?
+
+Can the test prepare its own state?
+
+Can the failure happen again?
+
+What evidence proves the root cause?
+
+That difference matters in senior-level automation work.
+
+---
+
+# SECTION 2616 — INTERVIEW STORY
+
+## 2861. Question
+
+Tell me about a CI-only automation failure you diagnosed.
+
+Strong answer:
+
+In my end-to-end commerce automation project,
+a Playwright products smoke test passed locally
+but failed consistently in GitHub Actions.
+
+The locator failure initially looked like a UI
+timing issue because the View Product button
+was not found.
+
+Instead of increasing the timeout, I checked
+the CI execution context and realized GitHub
+Actions was starting with a fresh PostgreSQL
+database.
+
+My local database already contained products,
+so the test had an undocumented dependency
+on existing data.
+
+I changed the test to create a unique product
+through the API before UI validation and clean
+it up afterwards.
+
+After the change, the complete pipeline passed.
+
+The main lesson was that reliable automation
+must own its prerequisite test data instead of
+depending on persistent environment state.
+
+---
+
+# SECTION 2617 — WHY THIS PROJECT IS NOW END-TO-END
+
+## 2862.
+
+The project now connects:
+
+Frontend Engineering
+Backend Engineering
+Database
+API Testing
+UI Testing
+Security / RBAC
+Test Data Management
+Docker
+CI/CD
+Reporting
+Failure Diagnostics
+
+This is much closer to real Quality Engineering than simply maintaining isolated Selenium or API scripts.
+
+---
+
+# SECTION 2618 — CURRENT PROJECT ARCHITECTURE
+
+## 2863.
+
+                         GitHub
+                            |
+                            v
+                    GitHub Actions CI
+                            |
+          +-----------------+------------------+
+          |                 |                  |
+          v                 v                  v
+      Backend            Frontend           Docker
+      Build/Test         Lint/Build         Validation
+          |
+          +------------------+
+                             |
+                             v
+                      API Automation
+                             |
+                   REST Assured + TestNG
+                             |
+                    API + DB Validation
+                             |
+                             v
+                      UI Automation
+                             |
+                    Playwright + TS
+                             |
+                             v
+                 Critical Browser Flows
+
+
+Application Runtime:
+
+React + TypeScript
+        |
+        v
+Spring Boot REST API
+        |
+        v
+PostgreSQL
+
+---
+
+# SECTION 2619 — CURRENT TEST STRATEGY
+
+## 2864.
+
+The project follows this philosophy:
+
+Many API/integration tests
+
+        +
+
+Focused critical UI tests
+
+        +
+
+Database validation where valuable
+
+Not:
+
+Automate every business rule through UI.
+
+Reason:
+
+API tests
+→ faster and more focused
+
+UI tests
+→ slower but validate actual user experience
+
+DB tests
+→ validate persistence when business risk requires it
+
+---
+
+# SECTION 2620 — TEST DATA STRATEGY
+
+## 2865.
+
+Current principle:
+
+Every important automated test should either:
+
+1. create the state it requires
+
+or
+
+2. explicitly receive controlled test state
+
+Avoid:
+
+"I think this record already exists."
+
+This principle becomes even more important with:
+
+CI
+parallel execution
+ephemeral environments
+cloud deployments
+
+---
+
+# SECTION 2621 — CI/CD VS CI
+
+## 2866.
+
+At this milestone, GitHub Actions primarily provides:
+
+Continuous Integration
+
+because it automatically:
+
+builds
+tests
+validates
+reports
+
+on code changes.
+
+A later AWS stage can introduce automated deployment behaviour.
+
+Therefore in interviews, describe the current implementation precisely:
+
+GitHub Actions CI pipeline
+
+rather than claiming a production deployment pipeline that has not yet been implemented.
+
+---
+
+# SECTION 2622 — COMMANDS TO REMEMBER
+
+## 2867. Docker
+
+docker compose config --quiet
+docker compose build
+docker compose up -d
+docker compose ps
+docker compose logs backend
+docker compose logs frontend
+docker compose logs postgres
+docker compose down
+
+Destructive local cleanup:
+
+docker compose down -v
+
+Remember:
+
+-v removes named volumes.
+
+## 2868. Playwright
+
+List tests:
+
+npx playwright test --list
+
+Run all:
+
+npx playwright test
+
+Run user project:
+
+npx playwright test --project=chromium-user
+
+Run admin project:
+
+npx playwright test --project=chromium-admin
+
+Run smoke:
+
+npx playwright test --grep "@smoke"
+
+Run regression:
+
+npx playwright test --grep "@regression"
+
+## 2869. GitHub Actions
+
+Recent runs:
+
+gh run list --limit 5
+
+View run:
+
+gh run view
+
+View failed logs:
+
+gh run view --log-failed
+
+This is useful when debugging CI without relying entirely on the browser UI.
+
+---
+
+# SECTION 2623 — CURRENT COMPLETION STATUS
+
+## 2870.
+
+Completed:
+
+Backend
+        COMPLETE
+
+PostgreSQL integration
+        COMPLETE
+
+JWT authentication
+        COMPLETE
+
+RBAC
+        COMPLETE
+
+Products
+        COMPLETE
+
+Cart
+        COMPLETE
+
+Orders
+        COMPLETE
+
+Mock Payment
+        COMPLETE
+
+REST Assured API Framework
+        COMPLETE
+
+48-Test API Regression
+        COMPLETE
+
+Database Validation
+        COMPLETE
+
+Allure
+        COMPLETE
+
+Swagger/OpenAPI
+        COMPLETE
+
+React + TypeScript Frontend
+        COMPLETE
+
+Playwright + TypeScript Framework
+        COMPLETE
+
+Dynamic UI Test Data
+        COMPLETE
+
+UI + API Hybrid Setup
+        COMPLETE
+
+Full Application Dockerization
+        COMPLETE
+
+GitHub Actions CI
+        COMPLETE
+
+API Automation in CI
+        COMPLETE
+
+Playwright Automation in CI
+        COMPLETE
+
+---
+
+# SECTION 2624 — NEXT PROJECT PHASE
+
+## 2871.
+
+Next:
+
+k6 Performance Testing
+
+Planned progression:
+
+Smoke Performance Test
+        ↓
+Load Test
+        ↓
+Stress Test
+        ↓
+Thresholds
+        ↓
+Response-Time Validation
+        ↓
+Error-Rate Validation
+        ↓
+CI Integration
+
+After performance testing:
+
+AWS Deployment / Cloud Integration
+
+Then:
+
+Final README
+GitHub Portfolio
+Recruiter-Facing Polish
+
+---
+
+# SECTION 2625 — MILESTONE SUMMARY
+
+## 2872.
+
+The most important evolution was:
+
+Backend API project
+        ↓
+API automation framework
+        ↓
+React frontend
+        ↓
+Playwright framework
+        ↓
+Dynamic test data
+        ↓
+UI + API hybrid testing
+        ↓
+Full-stack Dockerization
+        ↓
+GitHub Actions
+        ↓
+API automation in CI
+        ↓
+UI automation in CI
+        ↓
+CI-only failure investigation
+        ↓
+test-data dependency removed
+        ↓
+complete green pipeline
+
+---
+
+# SECTION 2626 — FINAL INTERVIEW REVISION
+
+## 2873.
+
+If asked:
+
+What did you build?
+
+Answer:
+
+I built an end-to-end commerce Quality Engineering
+portfolio project consisting of a Spring Boot backend,
+PostgreSQL database and React/TypeScript frontend.
+
+For automation, I built a REST Assured/TestNG API
+framework with API and database validation, and a
+Playwright/TypeScript UI framework using Page Objects,
+storage-state authentication and dynamic API-assisted
+test data.
+
+I Dockerized the complete application and integrated
+the quality checks into GitHub Actions so backend,
+frontend, Docker, API automation and Playwright
+automation are continuously validated on clean runners.
+
+If asked:
+
+What was the most useful engineering lesson?
+
+Answer:
+
+Automation reliability depends heavily on controlled
+state and reproducible environments.
+
+CI exposed a hidden dependency in one of my Playwright
+tests because it relied on a product that existed only
+in my local database.
+
+I fixed it by making the test create and clean up its
+own dynamic data rather than masking the problem with
+timeouts or retries.
+
+---
+
+# END OF PART 219
+
+# FRONTEND + PLAYWRIGHT + DOCKER + GITHUB ACTIONS CI MILESTONE COMPLETE
+
