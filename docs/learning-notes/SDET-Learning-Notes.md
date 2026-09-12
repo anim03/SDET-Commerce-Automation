@@ -21245,3 +21245,1685 @@ timeouts or retries.
 
 # FRONTEND + PLAYWRIGHT + DOCKER + GITHUB ACTIONS CI MILESTONE COMPLETE
 
+
+
+---
+
+# PART 220 — K6 PERFORMANCE TESTING + CI QUALITY GATE
+
+---
+
+# SECTION 2627 — WHY PERFORMANCE TESTING WAS ADDED
+
+## 2874.
+
+Functional automation answers:
+
+Does the application work correctly?
+
+Performance testing adds another question:
+
+How does the application behave when requests and
+concurrent users increase?
+
+The project already had:
+
+Spring Boot backend
+
+PostgreSQL
+
+React + TypeScript frontend
+
+REST Assured API automation
+
+Playwright UI automation
+
+Docker
+
+GitHub Actions
+
+The next Quality Engineering layer was:
+
+k6 Performance Testing
+
+The objective was not simply to run a large number
+of requests.
+
+The objective was to measure:
+
+response time
+
+failure rate
+
+request throughput
+
+concurrent virtual users
+
+percentile response times
+
+and threshold compliance.
+
+---
+
+# SECTION 2628 — PERFORMANCE TESTING TOOL
+
+## 2875.
+
+The selected tool was:
+
+k6
+
+k6 was used because it provides:
+
+JavaScript-based test scripts
+
+Virtual User execution
+
+HTTP performance testing
+
+Checks
+
+Thresholds
+
+Response-time metrics
+
+Failure-rate metrics
+
+Load profiles
+
+CI-friendly execution
+
+Machine-readable summary results
+
+The performance framework was kept separate from:
+
+backend/
+
+api-automation/
+
+frontend/
+
+ui-automation/
+
+because performance testing represents another
+independent Quality Engineering layer.
+
+---
+
+# SECTION 2629 — PERFORMANCE FRAMEWORK STRUCTURE
+
+## 2876.
+
+The project structure became:
+
+performance-tests/
+
+    config/
+
+        auth.js
+
+        config.js
+
+    scenarios/
+
+        smoke.js
+
+        load.js
+
+        stress.js
+
+    reports/
+
+        .gitkeep
+
+    README.md
+
+Responsibility:
+
+config.js
+
+handles environment/base URL configuration.
+
+auth.js
+
+handles authentication required by performance
+scenarios.
+
+smoke.js
+
+validates that important APIs remain healthy under
+very small load.
+
+load.js
+
+validates application behaviour under expected
+concurrent traffic.
+
+stress.js
+
+increases concurrency further to observe behaviour
+under heavier load.
+
+reports/
+
+stores generated performance artifacts.
+
+---
+
+# SECTION 2630 — PERFORMANCE ENVIRONMENT CONFIGURATION
+
+## 2877.
+
+Performance scripts must not contain real credentials.
+
+Runtime configuration is supplied through environment
+variables.
+
+Important variables include:
+
+BASE_URL
+
+PERF_USER_EMAIL
+
+PERF_USER_PASSWORD
+
+For local execution, existing local test credentials
+can be mapped to performance variables.
+
+Conceptually:
+
+TEST_EMAIL
+
+        ↓
+
+PERF_USER_EMAIL
+
+TEST_PASSWORD
+
+        ↓
+
+PERF_USER_PASSWORD
+
+This avoids duplicating credentials inside source code.
+
+Important security rule:
+
+Never commit:
+
+real usernames
+
+passwords
+
+JWT tokens
+
+database secrets
+
+environment secrets
+
+Performance scripts should remain portable between:
+
+LOCAL
+
+QA
+
+STAGE
+
+CI
+
+by changing runtime configuration rather than changing
+test code.
+
+---
+
+# SECTION 2631 — AUTHENTICATION DESIGN
+
+## 2878.
+
+The APIs require authentication.
+
+Therefore the performance flow performs login and
+retrieves a JWT before protected requests are executed.
+
+Conceptually:
+
+Performance User Credentials
+
+        ↓
+
+POST Login API
+
+        ↓
+
+Validate HTTP 200
+
+        ↓
+
+Extract JWT
+
+        ↓
+
+Authorization: Bearer token
+
+        ↓
+
+Execute protected API requests
+
+This keeps the performance test aligned with the
+actual application security model.
+
+---
+
+# SECTION 2632 — K6 CHECKS
+
+## 2879.
+
+k6 checks were added to validate functional correctness
+during performance execution.
+
+Examples include:
+
+login status is 200
+
+login response contains token
+
+products status is 200
+
+products response is JSON array
+
+search status is 200
+
+search response is JSON array
+
+Performance testing should not measure a fast broken
+response as a successful result.
+
+Therefore:
+
+Performance Validation
+
+        =
+
+Speed
+
+        +
+
+Correctness
+
+---
+
+# SECTION 2633 — PERFORMANCE THRESHOLDS
+
+## 2880.
+
+Thresholds convert performance expectations into
+automated pass/fail criteria.
+
+Important metrics used:
+
+checks
+
+http_req_duration
+
+http_req_failed
+
+Example concept:
+
+checks
+
+must remain above the required success percentage.
+
+http_req_duration
+
+uses percentile response-time limits.
+
+http_req_failed
+
+limits acceptable HTTP request failures.
+
+Thresholds allow k6 to behave as a quality gate.
+
+If a required threshold is violated:
+
+k6 exits with failure
+
+        ↓
+
+CI job fails
+
+        ↓
+
+performance regression becomes visible immediately.
+
+---
+
+# SECTION 2634 — WHY P95 MATTERS
+
+## 2881.
+
+Average response time alone can hide slow requests.
+
+Therefore percentile metrics are important.
+
+p95 means:
+
+95% of measured requests completed at or below
+that response time.
+
+Example:
+
+p95 = 100 ms
+
+means approximately:
+
+95% of requests completed within 100 ms.
+
+Percentiles provide a better view of user experience
+than relying only on average response time.
+
+Common useful metrics include:
+
+average
+
+median
+
+p90
+
+p95
+
+maximum
+
+---
+
+# SECTION 2635 — SMOKE PERFORMANCE TEST
+
+## 2882.
+
+The first scenario was:
+
+Smoke Performance Test
+
+Purpose:
+
+Verify that the performance script, authentication,
+important APIs, checks and thresholds work correctly
+before generating meaningful load.
+
+The smoke profile used:
+
+1 Virtual User
+
+5 iterations
+
+The smoke scenario validated:
+
+Login
+
+JWT retrieval
+
+Products API
+
+Product Search API
+
+Important idea:
+
+Smoke performance testing is not intended to find
+system capacity.
+
+It verifies that the performance test itself and the
+target system are healthy enough for larger tests.
+
+---
+
+# SECTION 2636 — LOCAL SMOKE TEST RESULT
+
+## 2883.
+
+The local smoke performance test completed successfully.
+
+Observed result:
+
+5 / 5 iterations completed
+
+22 / 22 checks passed
+
+100% check success
+
+0% HTTP request failures
+
+p95 response time approximately 78.98 ms
+
+The configured smoke response-time threshold was:
+
+p95 < 1000 ms
+
+Therefore:
+
+Observed p95
+
+        <
+
+Configured threshold
+
+Result:
+
+PASS
+
+The smoke baseline confirmed that the test framework
+and target APIs were working correctly.
+
+---
+
+# SECTION 2637 — LOAD TEST
+
+## 2884.
+
+After smoke validation, the next scenario was:
+
+Load Test
+
+Purpose:
+
+Observe application behaviour while concurrent Virtual
+Users increase under a controlled load profile.
+
+The load scenario increased execution up to:
+
+10 Virtual Users
+
+The test continuously executed authenticated API
+traffic during the configured stages.
+
+Important distinction:
+
+Smoke Test
+
+checks basic performance health.
+
+Load Test
+
+checks behaviour under expected or moderate concurrent
+traffic.
+
+---
+
+# SECTION 2638 — LOCAL LOAD TEST RESULT
+
+## 2885.
+
+The local load test completed successfully.
+
+Observed results:
+
+Maximum VUs:
+
+10
+
+Iterations:
+
+331
+
+HTTP requests:
+
+663
+
+Checks:
+
+664
+
+Checks passed:
+
+664 / 664
+
+Check success:
+
+100%
+
+HTTP request failure rate:
+
+0%
+
+p95 response time:
+
+approximately 10.43 ms
+
+Interrupted iterations:
+
+0
+
+The configured response-time threshold was:
+
+p95 < 1000 ms
+
+Result:
+
+PASS
+
+The application remained stable throughout the
+configured load profile.
+
+---
+
+# SECTION 2639 — INTERPRETING SMOKE VS LOAD RESPONSE TIMES
+
+## 2886.
+
+The smoke test showed a higher p95 than the load test.
+
+This does not automatically indicate a problem.
+
+Smoke execution had a very small sample size.
+
+With a small number of requests:
+
+initial requests
+
+connection setup
+
+application warm-up
+
+and login timing
+
+can have a larger effect on percentile calculations.
+
+The load test generated hundreds of requests and
+therefore produced a larger steady-state sample.
+
+Important lesson:
+
+Never compare performance numbers without considering:
+
+sample size
+
+test duration
+
+request distribution
+
+environment state
+
+warm-up behaviour
+
+and workload profile.
+
+---
+
+# SECTION 2640 — STRESS TEST
+
+## 2887.
+
+After the load test, a stress scenario was executed.
+
+Purpose:
+
+Increase concurrency beyond the normal load profile
+and observe whether the application remains stable.
+
+The stress profile increased execution up to:
+
+30 Virtual Users
+
+The stress thresholds were intentionally more tolerant
+than the normal load thresholds.
+
+Conceptually:
+
+checks > 95%
+
+HTTP failures < 5%
+
+p95 response time < 1500 ms
+
+Stress testing asks:
+
+How does the system behave when pushed harder than
+the normal load scenario?
+
+---
+
+# SECTION 2641 — LOCAL STRESS TEST RESULT
+
+## 2888.
+
+The local stress test also completed successfully.
+
+Observed results:
+
+Maximum VUs:
+
+30
+
+Iterations:
+
+1481
+
+HTTP requests:
+
+2963
+
+Checks:
+
+2964
+
+Checks passed:
+
+2964 / 2964
+
+Check success:
+
+100%
+
+HTTP request failures:
+
+0 / 2963
+
+Failure rate:
+
+0%
+
+p95 response time:
+
+approximately 6.07 ms
+
+Maximum observed response time:
+
+approximately 102.15 ms
+
+Interrupted iterations:
+
+0
+
+Request rate:
+
+approximately 32.6 requests per second
+
+Result:
+
+PASS
+
+---
+
+# SECTION 2642 — IMPORTANT STRESS TEST INTERPRETATION
+
+## 2889.
+
+Passing at 30 Virtual Users does NOT mean:
+
+The application's maximum capacity is 30 users.
+
+It means:
+
+Under the tested local environment,
+
+with the implemented workload,
+
+during the configured test duration,
+
+the application handled up to 30 concurrent Virtual
+Users without violating the defined thresholds.
+
+A true capacity or breaking-point test would require
+continued load increases until measurable degradation
+or failure occurs.
+
+Therefore performance claims must always include:
+
+environment
+
+workload
+
+duration
+
+concurrency
+
+and thresholds.
+
+---
+
+# SECTION 2643 — LOCAL PERFORMANCE RESULT SUMMARY
+
+## 2890.
+
+Performance results:
+
+SMOKE
+
+Max VUs:
+
+1
+
+Iterations:
+
+5
+
+Checks:
+
+22 / 22 passed
+
+HTTP failures:
+
+0%
+
+p95:
+
+approximately 78.98 ms
+
+Result:
+
+PASS
+
+
+LOAD
+
+Max VUs:
+
+10
+
+Iterations:
+
+331
+
+HTTP requests:
+
+663
+
+Checks:
+
+664 / 664 passed
+
+HTTP failures:
+
+0%
+
+p95:
+
+approximately 10.43 ms
+
+Result:
+
+PASS
+
+
+STRESS
+
+Max VUs:
+
+30
+
+Iterations:
+
+1481
+
+HTTP requests:
+
+2963
+
+Checks:
+
+2964 / 2964 passed
+
+HTTP failures:
+
+0%
+
+p95:
+
+approximately 6.07 ms
+
+Result:
+
+PASS
+
+---
+
+# SECTION 2644 — WHY STRESS TEST IS NOT RUN ON EVERY PUSH
+
+## 2891.
+
+Not every performance scenario belongs in the normal
+CI pipeline.
+
+Running heavy load or stress tests on every commit can:
+
+increase CI execution time
+
+consume unnecessary runner resources
+
+produce noisy results
+
+make normal development feedback slower.
+
+Therefore the project uses:
+
+Local / Manual
+
+        ↓
+
+Load Test
+
+Stress Test
+
+and:
+
+GitHub Actions CI
+
+        ↓
+
+Performance Smoke Test
+
+This provides fast performance regression feedback
+without turning every commit into a full-scale
+performance exercise.
+
+---
+
+# SECTION 2645 — PERFORMANCE TEST AS A CI QUALITY GATE
+
+## 2892.
+
+The k6 smoke test was integrated into:
+
+GitHub Actions
+
+The CI pipeline now validates:
+
+Backend Build & Test
+
+Frontend Lint & Build
+
+Docker Build Validation
+
+REST Assured API Automation
+
+Playwright UI Automation
+
+k6 Performance Smoke Test
+
+Performance testing therefore became part of the
+continuous quality feedback loop.
+
+If the k6 thresholds fail:
+
+k6 exits unsuccessfully
+
+        ↓
+
+GitHub Actions performance job fails
+
+        ↓
+
+performance regression is visible in CI.
+
+This makes performance validation:
+
+an executable quality gate
+
+rather than only a manually reviewed report.
+
+---
+
+# SECTION 2646 — CLEAN CI PERFORMANCE ENVIRONMENT
+
+## 2893.
+
+The performance CI job does not depend on the
+developer's local database.
+
+The CI job creates:
+
+PostgreSQL service
+
+        ↓
+
+Spring Boot backend
+
+        ↓
+
+Disposable performance test user
+
+        ↓
+
+k6 execution
+
+This provides:
+
+clean state
+
+repeatability
+
+environment independence
+
+and safer credential handling.
+
+The performance user used in CI is disposable
+test data.
+
+Real local credentials are not required by the
+GitHub Actions runner.
+
+---
+
+# SECTION 2647 — K6 EXECUTION THROUGH DOCKER IN CI
+
+## 2894.
+
+k6 is executed in CI using a Docker image.
+
+Conceptually:
+
+GitHub Runner
+
+        ↓
+
+Docker
+
+        ↓
+
+Grafana k6 image
+
+        ↓
+
+Mounted repository workspace
+
+        ↓
+
+performance-tests/scenarios/smoke.js
+
+Benefits include:
+
+reproducible k6 runtime
+
+no dependency on a manually installed local CLI
+
+consistent CI execution
+
+and easy integration with the existing Docker-based
+engineering workflow.
+
+---
+
+# SECTION 2648 — PERFORMANCE SUMMARY ARTIFACT
+
+## 2895.
+
+The CI smoke test generates a machine-readable summary:
+
+smoke-summary.json
+
+The k6 command uses summary export so that test results
+are written to:
+
+performance-tests/reports/smoke-summary.json
+
+The report contains information about:
+
+checks
+
+groups
+
+metrics
+
+thresholds
+
+HTTP behaviour
+
+and performance execution.
+
+GitHub Actions then uploads the generated file as:
+
+k6-performance-results
+
+This allows performance evidence to remain available
+after the CI job finishes.
+
+---
+
+# SECTION 2649 — REAL CI ARTIFACT FAILURE
+
+## 2896.
+
+The first CI integration produced an important
+engineering issue.
+
+The k6 test itself passed.
+
+However:
+
+smoke-summary.json
+
+was not uploaded.
+
+GitHub Actions reported that no files were found in:
+
+performance-tests/reports
+
+Investigation showed:
+
+k6 attempted to write the summary file
+
+        ↓
+
+repository workspace was mounted into the container
+
+        ↓
+
+container process could not write into reports/
+
+        ↓
+
+permission denied
+
+        ↓
+
+summary file was not created
+
+        ↓
+
+artifact upload found nothing.
+
+This was not a test failure.
+
+It was:
+
+a container filesystem permission problem.
+
+---
+
+# SECTION 2650 — WHY THIS FAILURE WAS USEFUL
+
+## 2897.
+
+This issue demonstrated an important difference between:
+
+Test execution success
+
+and
+
+Pipeline artifact success.
+
+The application and k6 checks were healthy.
+
+The failure existed in:
+
+CI infrastructure
+
++
+
+Docker filesystem permissions
+
++
+
+artifact generation.
+
+This is a realistic SDET responsibility because
+automation engineers must debug:
+
+tests
+
+applications
+
+containers
+
+CI runners
+
+filesystem behaviour
+
+and reporting pipelines.
+
+---
+
+# SECTION 2651 — K6 ARTIFACT PERMISSION FIX
+
+## 2898.
+
+The reports directory was explicitly prepared before
+running the k6 Docker container.
+
+The CI flow became:
+
+Create reports directory
+
+        ↓
+
+make directory writable for container execution
+
+        ↓
+
+run k6
+
+        ↓
+
+generate smoke-summary.json
+
+        ↓
+
+verify file exists
+
+        ↓
+
+upload GitHub Actions artifact.
+
+The pipeline also validates the generated file before
+continuing.
+
+This prevents a situation where:
+
+performance test passes
+
+but
+
+performance evidence silently disappears.
+
+---
+
+# SECTION 2652 — FINAL ARTIFACT VERIFICATION
+
+## 2899.
+
+After the permission fix, the GitHub Actions run
+completed successfully.
+
+The artifact was downloaded and independently verified.
+
+Confirmed file:
+
+smoke-summary.json
+
+Artifact:
+
+k6-performance-results
+
+The JSON contained actual k6 execution information,
+including checks such as:
+
+login status is 200
+
+login response contains token
+
+Therefore the final flow was verified end-to-end:
+
+Run k6
+
+        ↓
+
+execute checks
+
+        ↓
+
+evaluate thresholds
+
+        ↓
+
+generate JSON
+
+        ↓
+
+save JSON
+
+        ↓
+
+upload artifact
+
+        ↓
+
+download artifact
+
+        ↓
+
+verify artifact content.
+
+---
+
+# SECTION 2653 — FINAL SIX-JOB CI PIPELINE
+
+## 2900.
+
+The final GitHub Actions pipeline successfully executed
+all six quality jobs:
+
+1. Backend Build & Test
+
+2. Frontend Lint & Build
+
+3. Docker Build Validation
+
+4. REST Assured API Automation
+
+5. Playwright UI Automation
+
+6. k6 Performance Smoke Test
+
+Final result:
+
+6 / 6 jobs successful.
+
+This means the project now continuously validates:
+
+backend compilation and tests
+
+frontend linting and build
+
+container builds
+
+API behaviour
+
+database-integrated API automation
+
+browser UI behaviour
+
+and basic performance thresholds.
+
+---
+
+# SECTION 2654 — COMPLETE QUALITY ENGINEERING PIPELINE
+
+## 2901.
+
+The project quality pipeline can now be visualized as:
+
+Code Change
+
+        ↓
+
+Git Push / Pull Request
+
+        ↓
+
+GitHub Actions
+
+        ↓
+
+Backend Build & Test
+
+        +
+
+Frontend Lint & Build
+
+        +
+
+Docker Build Validation
+
+        +
+
+REST Assured API Automation
+
+        +
+
+Playwright UI Automation
+
+        +
+
+k6 Performance Smoke Test
+
+        ↓
+
+Reports / Artifacts
+
+        ↓
+
+Quality Feedback
+
+This represents multiple testing layers rather than
+a UI-only automation project.
+
+---
+
+# SECTION 2655 — PERFORMANCE TESTING ENGINEERING LESSON
+
+## 2902.
+
+Performance testing is not:
+
+run many users and look at response time.
+
+A better process is:
+
+Define workload
+
+        ↓
+
+Define checks
+
+        ↓
+
+Define thresholds
+
+        ↓
+
+Run controlled scenario
+
+        ↓
+
+Measure percentiles
+
+        ↓
+
+Measure failures
+
+        ↓
+
+Interpret results in environment context
+
+        ↓
+
+Store evidence
+
+        ↓
+
+Use appropriate tests as CI quality gates.
+
+---
+
+# SECTION 2656 — PERFORMANCE TESTING INTERVIEW ANSWER
+
+## 2903.
+
+If asked:
+
+How did you implement performance testing?
+
+Answer:
+
+I created a separate k6 performance framework for the
+commerce APIs with reusable environment and
+authentication configuration.
+
+I implemented smoke, load and stress scenarios and
+used checks and thresholds for functional correctness,
+HTTP failure rate and percentile response times.
+
+Locally, I validated the application up to the
+configured 30-VU stress profile without threshold
+violations.
+
+For CI, I intentionally integrated only the lightweight
+smoke performance scenario into GitHub Actions so that
+every change receives fast performance feedback without
+running a heavy stress test on every commit.
+
+The CI job starts a clean PostgreSQL and Spring Boot
+environment, creates disposable test data, executes k6
+through Docker, evaluates thresholds and publishes the
+JSON performance summary as a GitHub Actions artifact.
+
+---
+
+# SECTION 2657 — PERFORMANCE CI FAILURE INTERVIEW EXAMPLE
+
+## 2904.
+
+If asked:
+
+Tell me about a performance automation issue you
+debugged in CI.
+
+Answer:
+
+The k6 test itself was passing in GitHub Actions, but
+the JSON performance artifact was missing.
+
+I checked the job logs and found that k6 was running
+inside Docker and could not write the summary file into
+the mounted reports directory because of filesystem
+permissions.
+
+Instead of treating it as a test failure, I separated
+the execution problem from the reporting problem.
+
+I fixed the reports-directory permissions before
+container execution, added explicit verification that
+smoke-summary.json exists, and then uploaded it as a
+GitHub Actions artifact.
+
+After the fix, all six CI jobs passed and I downloaded
+the artifact to independently verify that the JSON
+contained the actual k6 checks and metrics.
+
+---
+
+# SECTION 2658 — PROJECT EVOLUTION AFTER PERFORMANCE TESTING
+
+## 2905.
+
+The project has now evolved through:
+
+Spring Boot Backend
+
+        ↓
+
+PostgreSQL Database
+
+        ↓
+
+JWT Authentication
+
+        ↓
+
+RBAC
+
+        ↓
+
+REST Assured + TestNG
+
+        ↓
+
+API + Database Validation
+
+        ↓
+
+Allure Reporting
+
+        ↓
+
+Swagger / OpenAPI
+
+        ↓
+
+React + TypeScript Frontend
+
+        ↓
+
+Playwright + TypeScript
+
+        ↓
+
+Page Object Model
+
+        ↓
+
+Dynamic API Test Data
+
+        ↓
+
+UI + API Hybrid Testing
+
+        ↓
+
+Dockerized Full Stack
+
+        ↓
+
+GitHub Actions CI
+
+        ↓
+
+REST Assured CI
+
+        ↓
+
+Playwright CI
+
+        ↓
+
+CI Failure Investigation
+
+        ↓
+
+k6 Performance Testing
+
+        ↓
+
+Smoke + Load + Stress
+
+        ↓
+
+Performance Thresholds
+
+        ↓
+
+Performance CI Quality Gate
+
+        ↓
+
+JSON Performance Artifact
+
+        ↓
+
+Six-Layer Green CI Pipeline
+
+---
+
+# SECTION 2659 — NEXT PROJECT PHASE
+
+## 2906.
+
+Performance Testing milestone:
+
+COMPLETE
+
+Completed:
+
+k6 framework
+
+Smoke test
+
+Load test
+
+Stress test
+
+Checks
+
+Thresholds
+
+p95 validation
+
+Failure-rate validation
+
+Local performance execution
+
+Docker-based k6 execution
+
+GitHub Actions integration
+
+CI performance quality gate
+
+JSON summary generation
+
+Artifact upload
+
+Artifact download verification
+
+Real CI permission issue investigation
+
+Final 6 / 6 green pipeline
+
+Next major phase:
+
+AWS Deployment / Cloud Integration
+
+Planned cloud progression:
+
+AWS architecture
+
+        ↓
+
+IAM / secure access
+
+        ↓
+
+RDS PostgreSQL
+
+        ↓
+
+Spring Boot deployment
+
+        ↓
+
+Frontend deployment
+
+        ↓
+
+environment configuration
+
+        ↓
+
+cloud-based application validation
+
+        ↓
+
+CI/CD deployment evolution
+
+        ↓
+
+CloudWatch / observability
+
+The objective is not merely:
+
+put application on AWS.
+
+The objective is to understand:
+
+how the complete application
+
+is configured,
+
+deployed,
+
+validated,
+
+secured,
+
+observed,
+
+and tested
+
+in a cloud environment.
+
+---
+
+# SECTION 2660 — FINAL REVISION LINE
+
+## 2907.
+
+The Quality Engineering journey now follows:
+
+Understand the system.
+
+Build reproducible environments.
+
+Test the business behaviour.
+
+Automate at the correct layer.
+
+Control test data.
+
+Validate the database.
+
+Secure the credentials.
+
+Containerize the system.
+
+Integrate quality into CI.
+
+Measure performance with thresholds.
+
+Store execution evidence.
+
+Debug failures using logs and data.
+
+Communicate quality risk with evidence.
+
+---
+
+# END OF PART 220
+
+# K6 PERFORMANCE TESTING + CI QUALITY GATE MILESTONE COMPLETE
+

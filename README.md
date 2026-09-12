@@ -695,38 +695,114 @@ SDET-Commerce-Automation/
 
 # Test Strategy
 
-The project follows a layered quality engineering approach.
+The project follows a layered Quality Engineering approach.
 
 ```text
-                    UI Tests
-                  (Playwright)
-                     Planned
+                    UI / E2E
+                   Playwright
                        ▲
                       / \
                      /   \
                     /     \
              API / Integration
-              REST Assured
-              Current Focus
-                  ▲
-                 / \
-                /   \
-               /     \
-          Service / Data Layer
-           DB Validation
+          REST Assured + TestNG
+                     ▲
+                    / \
+                   /   \
+                  /     \
+            Service / Data Layer
+        PostgreSQL / JDBC Validation
+
+              Performance Layer
+                     k6
 ```
 
-The majority of automated coverage is intentionally maintained at the API and integration layers, while future UI automation will focus on critical end-to-end user journeys.
+The majority of automated functional coverage is intentionally maintained at the API and integration layers.
+
+Playwright focuses on critical end-to-end user journeys, while API-assisted setup and cleanup are used to keep UI tests reliable and independent of static database state.
+
+The current automated quality layers include:
+
+- Backend unit/integration validation
+- REST API automation
+- Database validation
+- Authentication and RBAC validation
+- Playwright UI automation
+- UI + API hybrid testing
+- Docker build validation
+- k6 performance testing
+- GitHub Actions continuous quality gates
 
 ---
 
 # Roadmap
 
-## Next Phase
+## Completed Engineering Milestones
+
+### Backend
+
+Implemented using:
+
+```text
+Java 17
+Spring Boot
+PostgreSQL
+JWT
+RBAC
+Swagger / OpenAPI
+```
+
+Core commerce capabilities include:
+
+- User registration
+- Login and JWT authentication
+- User profile
+- Product catalogue
+- Product search
+- Product details
+- Cart management
+- Checkout
+- Order creation
+- Order retrieval
+- Order cancellation
+- Mock payment
+- Admin product CRUD
+- Role-based authorization
+
+### API Automation
+
+Implemented a separate automation framework using:
+
+```text
+Java
+REST Assured
+TestNG
+JDBC
+Allure
+```
+
+The framework includes:
+
+- Environment configuration
+- Reusable request specifications
+- Authentication helpers
+- Dynamic test data
+- API validation
+- Database validation
+- Security validation
+- RBAC testing
+- Sensitive-data sanitization
+- Allure reporting
+
+Current API regression:
+
+```text
+48 automated tests
+```
 
 ### Frontend
 
-Build the application UI using:
+Implemented the real application UI using:
 
 ```text
 React
@@ -734,82 +810,206 @@ TypeScript
 Vite
 ```
 
-Planned screens include:
+The frontend consumes the actual Spring Boot APIs rather than static mock data.
+
+Implemented flows include:
 
 - Login
-- Registration
 - Product catalogue
 - Product search
 - Product details
 - Shopping cart
 - Checkout
 - Orders
-- Payment
+- Order details
+- Mock payment
 - Admin product management
+- Role-based UI access
 
 ### UI Automation
 
-Build a separate automation framework using:
+Implemented a separate framework using:
 
 ```text
 Playwright
 TypeScript
 ```
 
-Coverage will include:
+The framework includes:
+
+- Page Object Model
+- Authentication storage state
+- User and Admin fixtures
+- Environment configuration
+- Dynamic API-assisted test data
+- API setup and cleanup
+- UI + API hybrid testing
+- Smoke and regression tagging
+- HTML reports
+- Screenshots
+- Videos
+- Playwright traces
+
+Critical coverage includes:
 
 - Authentication
 - Product browsing
+- Product search
+- Product details
 - Cart workflows
 - Order creation
-- Payment workflow
+- Payment
 - Admin RBAC
-- UI + API hybrid scenarios
+- Admin product management
+
+### Docker
+
+The complete application is Dockerized.
+
+```text
+PostgreSQL
+    ↓
+Spring Boot Backend
+    ↓
+React Frontend
+```
+
+Docker Compose provides a reproducible full-stack environment for local and CI execution.
 
 ### CI/CD
 
-Integrate:
+GitHub Actions currently executes six automated quality jobs:
 
 ```text
-GitHub Actions
+Backend Build & Test
+        +
+Frontend Lint & Build
+        +
+Docker Build Validation
+        +
+REST Assured API Automation
+        +
+Playwright UI Automation
+        +
+k6 Performance Smoke Test
 ```
 
-Planned pipeline stages:
+The pipeline uses clean runner environments and disposable test data.
 
-```text
-Build
-  ↓
-API Tests
-  ↓
-UI Tests
-  ↓
-Reports
-  ↓
-Quality Gate
-```
+A CI-only Playwright failure exposed a hidden dependency on local product data.
+
+The affected test was corrected to create and clean up its own dynamic product through the API.
+
+This removed the static database dependency rather than masking the problem with retries.
 
 ### Performance Testing
 
-Add:
+Implemented using:
 
 ```text
 k6
 JavaScript
 ```
 
-for load and performance validation of critical APIs.
+Performance coverage includes:
 
-### Cloud
+- Smoke testing
+- Load testing
+- Stress testing
+- Functional checks
+- HTTP failure-rate thresholds
+- p95 response-time thresholds
+- Virtual User load profiles
+- CI performance quality gate
+- JSON summary artifact generation
 
-Deploy the application using selected AWS services such as:
+Local validation completed successfully for all three scenarios.
+
+Smoke result:
 
 ```text
-EC2
-RDS
-S3
+1 VU
+5 iterations
+22 / 22 checks passed
+0% HTTP failures
+p95 ≈ 78.98 ms
+```
+
+Load result:
+
+```text
+10 max VUs
+331 iterations
+663 HTTP requests
+664 / 664 checks passed
+0% HTTP failures
+p95 ≈ 10.43 ms
+```
+
+Stress result:
+
+```text
+30 max VUs
+1481 iterations
+2963 HTTP requests
+2964 / 2964 checks passed
+0% HTTP failures
+p95 ≈ 6.07 ms
+```
+
+These measurements represent the configured local test environment and workload; they are not claims about the application's absolute production capacity.
+
+The lightweight k6 smoke scenario is integrated into GitHub Actions as a performance quality gate.
+
+The CI execution automatically generates:
+
+```text
+smoke-summary.json
+```
+
+and publishes it as the GitHub Actions artifact:
+
+```text
+k6-performance-results
+```
+
+The artifact generation flow was independently verified by downloading and inspecting the generated JSON.
+
+## Next Phase — AWS Cloud Deployment
+
+The next major engineering phase is AWS deployment and cloud validation.
+
+Planned services include:
+
+```text
 IAM
+RDS
+EC2
+S3
 CloudWatch
 ```
+
+The objective is to evolve the project from:
+
+```text
+Local + Docker + CI
+```
+
+to:
+
+```text
+Cloud-Deployed Application
+        ↓
+Cloud Configuration
+        ↓
+Cloud Validation
+        ↓
+Observability
+        ↓
+Deployment Automation
+```
+
+The AWS phase will focus on understanding how the application is securely configured, deployed, tested and observed in a cloud environment.
 
 ---
 
@@ -836,27 +1036,69 @@ It focuses on:
 ## Project Evolution
 
 ```text
-Backend + Database
+Spring Boot Backend
         ↓
-API Automation
+PostgreSQL Database
         ↓
-Security / RBAC
+JWT Authentication + RBAC
+        ↓
+REST Assured + TestNG
+        ↓
+API + Database Validation
         ↓
 Allure Reporting
         ↓
 Swagger / OpenAPI
         ↓
-React Frontend
+React + TypeScript Frontend
         ↓
-Playwright UI Automation
+Playwright + TypeScript
+        ↓
+Dynamic API Test Data
+        ↓
+UI + API Hybrid Testing
         ↓
 Dockerized Full Stack
         ↓
-GitHub Actions
+GitHub Actions CI
         ↓
-Performance Testing
+REST Assured CI
+        ↓
+Playwright CI
+        ↓
+k6 Performance Testing
+        ↓
+Performance CI Quality Gate
+        ↓
+Six-Job Green CI Pipeline
         ↓
 AWS Deployment
+```
+
+Current completed state:
+
+```text
+Backend
++
+Frontend
++
+Database
++
+API Automation
++
+UI Automation
++
+Docker
++
+CI
++
+Performance Testing
+```
+
+Next:
+
+```text
+AWS Cloud Deployment + Validation
 ```
 
 ---
