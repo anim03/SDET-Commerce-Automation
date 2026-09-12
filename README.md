@@ -1109,3 +1109,192 @@ AWS Cloud Deployment + Validation
 
 Senior SDET / Automation Lead portfolio project focused on modern Quality Engineering, automation architecture, API testing, UI automation, CI/CD, and cloud-ready testing practices.
 
+
+---
+
+## Live Deployment
+
+The SDET Commerce Automation platform has been deployed as a publicly accessible full-stack portfolio application.
+
+### Live Application
+
+| Component | URL |
+|---|---|
+| Frontend | https://sdet-commerce-automation.vercel.app |
+| Backend API | https://sdet-commerce-automation.onrender.com |
+| Swagger UI | https://sdet-commerce-automation.onrender.com/swagger-ui/index.html |
+
+### Cloud Deployment Architecture
+
+    GitHub
+       |
+       +--------------------+
+       |                    |
+       v                    v
+    Vercel               Render
+    React +              Spring Boot
+    TypeScript           REST API
+                             |
+                             v
+                         Supabase
+                         PostgreSQL
+
+### Deployment Stack
+
+- Frontend Hosting: Vercel
+- Backend Hosting: Render
+- Database: Supabase PostgreSQL
+- Backend: Java + Spring Boot
+- Frontend: React + TypeScript + Vite
+- Containerization: Docker
+- CI: GitHub Actions
+- API Documentation: Swagger / OpenAPI
+- Authentication: JWT
+- API Automation: REST Assured + TestNG
+- UI Automation: Playwright
+- Performance Testing: k6
+
+### Environment-Based Configuration
+
+Production configuration is supplied using environment variables instead of hardcoded credentials.
+
+Backend variables:
+
+    DB_URL
+    DB_USERNAME
+    DB_PASSWORD
+    JWT_SECRET
+    JWT_EXPIRATION_MS
+    FRONTEND_URL
+    PORT
+
+Frontend variable:
+
+    VITE_API_BASE_URL
+
+Secrets and production database credentials are not committed to GitHub.
+
+### Runtime Port Configuration
+
+The Spring Boot application supports both local and hosted runtime ports:
+
+    server.port=${PORT:8080}
+
+Local development therefore continues to use port 8080 while the hosting platform can provide its own runtime port.
+
+### Cloud-Aware CORS
+
+The backend CORS configuration uses the FRONTEND_URL environment variable.
+
+Local development defaults to:
+
+    http://localhost:5173
+
+The hosted environment uses:
+
+    https://sdet-commerce-automation.vercel.app
+
+This allows the deployed Vercel frontend to communicate with the Render backend.
+
+### Cloud Database
+
+The deployed backend uses Supabase PostgreSQL.
+
+The application connects using environment-based database configuration:
+
+    DB_URL
+    DB_USERNAME
+    DB_PASSWORD
+
+The Supabase Session Pooler is used for hosted database connectivity.
+
+Hibernate schema management creates and updates the application schema using:
+
+    spring.jpa.hibernate.ddl-auto=update
+
+Application tables include:
+
+    users
+    products
+    cart_items
+    orders
+    order_items
+    payments
+
+Demo product records were seeded into the cloud database for live end-to-end validation.
+
+### SPA Routing
+
+Vercel SPA routing is configured through:
+
+    frontend/vercel.json
+
+This allows React Router routes such as:
+
+    /login
+    /products
+    /cart
+    /orders
+
+to be opened directly without returning a hosting-platform 404.
+
+### Live End-to-End Validation
+
+The deployed environment was validated through the complete commerce workflow:
+
+    Login
+      ↓
+    Products
+      ↓
+    Product Details
+      ↓
+    Add to Cart
+      ↓
+    Cart
+      ↓
+    Checkout
+      ↓
+    Order Creation
+      ↓
+    Payment
+      ↓
+    Orders
+      ↓
+    Order Details
+
+The validated live integration chain is:
+
+    Browser
+       ↓
+    Vercel
+    React + TypeScript
+       ↓
+    HTTPS REST API
+       ↓
+    Render
+    Spring Boot
+       ↓
+    Supabase
+    PostgreSQL
+
+### CI and Deployment
+
+GitHub Actions provides the project CI quality gates:
+
+- Backend Build & Test
+- Frontend Lint & Build
+- Docker Build Validation
+- REST Assured API Automation
+- Playwright UI Automation
+- k6 Performance Smoke Test
+
+Application hosting is provided through Vercel, Render, and Supabase.
+
+### Free-Tier Deployment Note
+
+This environment is intended for portfolio and demonstration purposes.
+
+The deployment currently uses free-tier services. Free services may have limitations such as cold starts, inactivity spin-down, usage limits, or project pausing.
+
+No paid AWS infrastructure is required for the current portfolio deployment.
+

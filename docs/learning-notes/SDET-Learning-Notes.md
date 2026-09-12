@@ -22927,3 +22927,388 @@ Communicate quality risk with evidence.
 
 # K6 PERFORMANCE TESTING + CI QUALITY GATE MILESTONE COMPLETE
 
+
+---
+
+# Part 221 - Live Full-Stack Cloud Deployment
+
+## Objective
+
+Deploy the SDET Commerce Automation project as a publicly accessible full-stack application using a zero-cost portfolio hosting architecture.
+
+This milestone moved the project from localhost and Docker-only execution to a real hosted environment.
+
+## Final Architecture
+
+    GitHub
+       |
+       +---------------------+
+       |                     |
+       v                     v
+    Vercel                Render
+    React +               Spring Boot
+    TypeScript            REST API
+                              |
+                              v
+                          Supabase
+                          PostgreSQL
+
+## Frontend Deployment
+
+The React + TypeScript frontend was deployed using Vercel.
+
+Production frontend:
+
+    https://sdet-commerce-automation.vercel.app
+
+The frontend communicates with the hosted backend using:
+
+    VITE_API_BASE_URL
+
+This allows local development and cloud execution to use different backend URLs without hardcoding the production API address.
+
+## Backend Deployment
+
+The Spring Boot backend was deployed as a Docker-based Render Web Service.
+
+Production backend:
+
+    https://sdet-commerce-automation.onrender.com
+
+Swagger:
+
+    https://sdet-commerce-automation.onrender.com/swagger-ui/index.html
+
+## Runtime Port Configuration
+
+Local Spring Boot development originally used port 8080.
+
+The backend was updated to support a hosting-provider runtime port:
+
+    server.port=${PORT:8080}
+
+Behaviour:
+
+    Local:
+    PORT not supplied
+    → 8080
+
+    Hosted:
+    PORT supplied
+    → hosting-provider runtime port
+
+This made the backend cloud-aware without breaking local development.
+
+## Cloud-Aware CORS
+
+Local development used:
+
+    http://localhost:5173
+
+The hosted frontend uses:
+
+    https://sdet-commerce-automation.vercel.app
+
+The backend therefore reads the allowed frontend origin from:
+
+    FRONTEND_URL
+
+This solved cross-origin communication between the Vercel frontend and Render backend.
+
+## PostgreSQL Cloud Deployment
+
+Local development uses PostgreSQL through Docker.
+
+The hosted environment uses Supabase PostgreSQL.
+
+Backend database variables:
+
+    DB_URL
+    DB_USERNAME
+    DB_PASSWORD
+
+Production database credentials are stored as hosting-platform environment variables and are not committed to GitHub.
+
+The Supabase Session Pooler was used for hosted database connectivity without enabling a paid IPv4 add-on.
+
+## Database Schema Creation
+
+Hibernate is configured using:
+
+    spring.jpa.hibernate.ddl-auto=update
+
+After the Render backend connected to Supabase, the application schema was created.
+
+Tables included:
+
+    users
+    products
+    cart_items
+    orders
+    order_items
+    payments
+
+## Fresh Cloud Database Learning
+
+The cloud database initially contained no product records.
+
+Local PostgreSQL data does not automatically move into a new hosted PostgreSQL database.
+
+Important learning:
+
+    Application deployment
+    is different from
+    database data migration
+
+Demo products were therefore seeded into the Supabase products table.
+
+## Authentication Validation
+
+A user was registered against the deployed backend and the live authentication flow was validated.
+
+    Vercel Login
+       ↓
+    Render Login API
+       ↓
+    BCrypt Password Validation
+       ↓
+    JWT Generation
+       ↓
+    Authenticated Frontend Session
+
+This confirmed that authentication works across the hosted infrastructure.
+
+## SPA Routing Issue and Fix
+
+Directly opening a React route such as:
+
+    /login
+
+initially returned a Vercel 404.
+
+The application itself used React Router correctly, but the hosting platform attempted to resolve the route as a physical resource.
+
+The fix was:
+
+    frontend/vercel.json
+
+with SPA fallback routing to:
+
+    /index.html
+
+After deployment, direct navigation to client-side routes worked correctly.
+
+## Live Product Validation
+
+The Supabase products table initially contained zero records, which caused the live Products page to display:
+
+    No products found
+
+Demo products were inserted into Supabase.
+
+The complete data flow was then validated:
+
+    Browser
+       ↓
+    Vercel Frontend
+       ↓
+    GET /api/products
+       ↓
+    Render Spring Boot API
+       ↓
+    Supabase PostgreSQL
+       ↓
+    Product Response
+       ↓
+    React UI
+
+## Live End-to-End Validation
+
+The complete deployed commerce flow was successfully tested:
+
+    Login
+      ↓
+    Products
+      ↓
+    Product Details
+      ↓
+    Add to Cart
+      ↓
+    Cart
+      ↓
+    Checkout
+      ↓
+    Order Creation
+      ↓
+    Payment
+      ↓
+    Orders
+      ↓
+    Order Details
+
+This validated:
+
+    Vercel
+      ↓
+    Render
+      ↓
+    Spring Boot
+      ↓
+    Supabase PostgreSQL
+
+## Local vs Hosted Architecture
+
+Local:
+
+    React / Vite
+    localhost:5173
+       ↓
+    Spring Boot
+    localhost:8080
+       ↓
+    Docker PostgreSQL
+    localhost:5432
+
+Hosted:
+
+    Vercel
+    React Frontend
+       ↓
+    Render
+    Spring Boot API
+       ↓
+    Supabase
+    PostgreSQL
+
+## Deployment Troubleshooting
+
+Real deployment issues handled during this milestone included:
+
+- Runtime port configuration
+- Environment variables
+- Supabase database connectivity
+- Session Pooler configuration
+- IPv4/IPv6 connectivity considerations
+- CORS
+- JWT environment configuration
+- Frontend API environment switching
+- Vercel SPA routing
+- Fresh cloud database state
+- Demo data seeding
+- Hosted authentication
+- End-to-end integration validation
+
+## Quality Engineering Architecture
+
+The project now covers:
+
+    Application
+    ├── Spring Boot Backend
+    ├── React + TypeScript Frontend
+    └── PostgreSQL
+
+    Automation
+    ├── REST Assured
+    ├── TestNG
+    ├── Playwright
+    ├── SQL Validation
+    └── k6
+
+    Engineering
+    ├── Docker
+    ├── Docker Compose
+    ├── Git
+    ├── GitHub
+    └── GitHub Actions
+
+    Cloud / Hosting
+    ├── Vercel
+    ├── Render
+    └── Supabase
+
+## CI Quality Gates
+
+The GitHub Actions pipeline currently contains six quality jobs:
+
+- Backend Build & Test
+- Frontend Lint & Build
+- Docker Build Validation
+- REST Assured API Automation
+- Playwright UI Automation
+- k6 Performance Smoke Test
+
+GitHub Actions currently provides CI quality validation.
+
+Vercel and Render handle the hosted application deployments from the connected repository.
+
+## Free-Tier Architecture
+
+The portfolio deployment uses:
+
+    Vercel Hobby
+       +
+    Render Free
+       +
+    Supabase Free
+
+This environment is intended for demonstration rather than production-scale infrastructure.
+
+Free-tier services can have limitations such as:
+
+- Cold starts
+- Inactivity spin-down
+- Usage quotas
+- Project pausing
+
+## Key Learning
+
+A locally working application is not automatically cloud-ready.
+
+Moving the application to hosted infrastructure required understanding:
+
+- Application configuration
+- Environment variables
+- Runtime networking
+- CORS
+- Authentication
+- Database connectivity
+- Secret management
+- SPA routing
+- Cloud database state
+- Hosting
+- Deployment validation
+
+This milestone demonstrates why an SDET benefits from understanding the complete software delivery architecture rather than only writing automation scripts.
+
+## Portfolio Outcome
+
+The project now demonstrates hands-on experience with:
+
+- Java
+- Spring Boot
+- REST APIs
+- React
+- TypeScript
+- Vite
+- PostgreSQL
+- SQL
+- JWT Authentication
+- BCrypt
+- Role-Based Access Control
+- REST Assured
+- TestNG
+- Playwright
+- Docker
+- Docker Compose
+- Git
+- GitHub
+- GitHub Actions
+- Swagger / OpenAPI
+- Allure
+- k6 Performance Testing
+- Cloud Deployment
+- Environment Configuration
+- End-to-End Validation
+
+The project now represents an end-to-end SDET and quality engineering portfolio covering application development, API automation, UI automation, database testing, containerization, CI, performance testing, cloud deployment, and production-style validation.
+
