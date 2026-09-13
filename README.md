@@ -3,98 +3,164 @@
 ## Author
 **Animesh Pandey**
 
-Senior SDET / Automation Lead portfolio project focused on modern Quality Engineering, automation architecture, API testing, UI automation, CI/CD, and cloud-ready testing practices.
+Senior SDET / Automation Lead portfolio project demonstrating end-to-end Quality Engineering across application development, API automation, UI automation, database validation, security testing, CI, performance engineering, containerization, and live cloud deployment.
 
-An end-to-end **Quality Engineering and SDET portfolio project** built to demonstrate backend development, API automation, database validation, security testing, test reporting, and scalable automation framework design.
+An end-to-end **Quality Engineering and SDET portfolio platform** built using **Java, Spring Boot, React, TypeScript, PostgreSQL, REST Assured, Playwright, Docker, GitHub Actions, Swagger/OpenAPI, Allure, and k6**.
 
-The project currently consists of a **Spring Boot REST API**, **PostgreSQL database**, and an independent **REST Assured + TestNG API automation framework**.
-
-The long-term goal is to evolve this repository into a complete full-stack quality engineering platform including React, Playwright, Docker, CI/CD, performance testing, and AWS deployment.
-
----
+The complete application is deployed as a live portfolio environment using **Vercel**, **Render**, and **Supabase PostgreSQL**.
 
 ## Current Project Status
 
 ### Completed
 
-- Spring Boot REST API
+#### Application Development
+- Java 17 + Spring Boot REST API
 - PostgreSQL database integration
+- React + TypeScript + Vite frontend
 - User registration and login
 - JWT authentication
+- BCrypt password security
 - Role-based authorization (`ROLE_USER`, `ROLE_ADMIN`)
 - Product management
 - Shopping cart
 - Order management
 - Mock payment processing
+- Admin product management
+
+#### API Automation
 - REST Assured API automation framework
 - TestNG test execution
-- API functional testing
+- Functional API testing
 - Negative and validation testing
 - Security and authorization testing
 - RBAC testing
-- Database validation using JDBC
 - JSON schema validation
 - Environment-based test configuration
-- Allure reporting
 - API request/response evidence
-- Sensitive-data redaction in reports
-- Swagger / OpenAPI documentation
-- Swagger JWT authorization
+- Sensitive-data redaction
+- Allure reporting
 
-### Planned
-
-- React + TypeScript frontend
+#### UI Automation
 - Playwright + TypeScript UI automation
+- Critical end-to-end user journeys
 - UI + API hybrid automation
-- Full application Dockerization
-- GitHub Actions CI/CD
-- k6 performance testing
-- AWS deployment
-- Extended observability and reporting
+- Dynamic API-driven test data
+- Authentication state handling
+- CI-compatible browser automation
+
+#### Database Testing
+- JDBC / SQL validation
+- PostgreSQL integration testing
+- Cloud database validation
+
+#### DevOps & CI
+- Docker backend containerization
+- Docker frontend containerization
+- Docker Compose full-stack execution
+- Git + GitHub
+- GitHub Actions CI quality gates
+- Backend build and test validation
+- Frontend lint and build validation
+- Docker build validation
+- REST Assured regression execution
+- Playwright UI automation in CI
+
+#### Performance Testing
+- k6 smoke testing
+- k6 load testing
+- k6 stress testing
+- Performance thresholds
+- k6 CI quality gate
+- Performance result artifacts
+
+#### Documentation & Reporting
+- Swagger / OpenAPI
+- Swagger JWT authorization
+- Allure reporting
+- Learning documentation
+
+#### Live Cloud Deployment
+- Vercel frontend deployment
+- Render Spring Boot REST API deployment
+- Supabase PostgreSQL deployment
+- Environment-based cloud configuration
+- Cloud-aware CORS
+- SPA routing
+- Live authentication validation
+- Live product/database validation
+- Complete live E2E commerce flow validation
+
+### Future Enhancements
+
+The core **SDET Commerce Automation v1.0** project is complete.
+
+Optional future learning extensions:
+- Extended observability and centralized logging
+- AWS cloud-readiness exercises
+- Additional resilience testing
+- Distributed-system testing concepts
 
 ---
 
 ## Architecture
 
-```text
-                         SDET Commerce Platform
+    SDET Commerce Automation
 
-                         ┌─────────────────────┐
-                         │   React Frontend    │
-                         │    (Planned)        │
-                         └──────────┬──────────┘
-                                    │
-                                    │ HTTP / REST
-                                    ▼
-                         ┌─────────────────────┐
-                         │ Spring Boot REST API│
-                         │                     │
-                         │ JWT Authentication  │
-                         │ RBAC Authorization  │
-                         │ Business Services   │
-                         └──────────┬──────────┘
-                                    │
-                                    │ JPA / Hibernate
-                                    ▼
-                         ┌─────────────────────┐
-                         │     PostgreSQL      │
-                         └─────────────────────┘
+    React + TypeScript + Vite
+              |
+              | HTTPS / REST
+              v
+       Spring Boot REST API
+              |
+              | JPA / Hibernate
+              v
+          PostgreSQL
 
 
-              API Automation Architecture
+    QUALITY ENGINEERING
 
-┌───────────────────────┐
-│ REST Assured + TestNG │
-└───────────┬───────────┘
-            │
-            ├──────────────► Spring Boot REST API
-            │
-            ├──────────────► JSON Schema Validation
-            │
-            ├──────────────► PostgreSQL DB Validation
-            │
-            └──────────────► Allure Reporting
-```
+    REST Assured + TestNG
+       |-- API Functional Testing
+       |-- Negative Testing
+       |-- Security / RBAC Testing
+       |-- JSON Schema Validation
+       +-- JDBC / SQL Validation
+
+    Playwright + TypeScript
+       |-- E2E UI Automation
+       |-- UI + API Hybrid Testing
+       +-- Dynamic Test Data
+
+    k6
+       |-- Smoke Testing
+       |-- Load Testing
+       +-- Stress Testing
+
+
+    CI QUALITY GATES
+
+    GitHub Actions
+       |-- Backend Build & Test
+       |-- Frontend Lint & Build
+       |-- Docker Build Validation
+       |-- REST Assured Regression
+       |-- Playwright UI Automation
+       +-- k6 Performance Smoke Test
+
+
+    LIVE DEPLOYMENT
+
+    Vercel
+    React + TypeScript Frontend
+              |
+              | HTTPS
+              v
+    Render
+    Spring Boot REST API
+              |
+              v
+    Supabase
+    PostgreSQL
 
 ---
 
@@ -102,22 +168,28 @@ The long-term goal is to evolve this repository into a complete full-stack quali
 
 | Area | Technology |
 |---|---|
-| Backend | Java 17 |
-| Framework | Spring Boot |
+| Backend | Java 17 + Spring Boot |
+| Frontend | React + TypeScript + Vite |
 | REST API | Spring Web MVC |
 | Database | PostgreSQL |
 | ORM | Spring Data JPA / Hibernate |
-| Authentication | JWT |
+| Authentication | JWT + BCrypt |
 | Authorization | Spring Security / RBAC |
 | API Automation | REST Assured |
 | Test Framework | TestNG |
+| UI Automation | Playwright + TypeScript |
 | Database Testing | JDBC / SQL |
-| Schema Validation | REST Assured JSON Schema Validator |
+| Schema Validation | JSON Schema Validator |
 | Reporting | Allure |
 | API Documentation | Swagger / OpenAPI |
-| Build Tool | Maven |
-| Database Container | Docker / Docker Compose |
-| Version Control | Git / GitHub |
+| Performance Testing | k6 |
+| Build | Maven + npm |
+| Containerization | Docker + Docker Compose |
+| Continuous Integration | GitHub Actions |
+| Version Control | Git + GitHub |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
+| Cloud Database | Supabase PostgreSQL |
 
 ---
 
@@ -876,7 +948,7 @@ React Frontend
 
 Docker Compose provides a reproducible full-stack environment for local and CI execution.
 
-### CI/CD
+### Continuous Integration (CI)
 
 GitHub Actions currently executes six automated quality jobs:
 
@@ -977,40 +1049,11 @@ The artifact generation flow was independently verified by downloading and inspe
 
 ## Next Phase — AWS Cloud Deployment
 
-The next major engineering phase is AWS deployment and cloud validation.
+The application is now deployed and validated using a zero-cost portfolio architecture consisting of **Vercel**, **Render**, and **Supabase PostgreSQL**.
 
-Planned services include:
+AWS cloud-readiness learning is not required for the current project. AWS is retained only as an optional future cloud-readiness learning area covering architecture concepts such as EC2, RDS, IAM, CloudWatch, and deployment strategy.
 
-```text
-IAM
-RDS
-EC2
-S3
-CloudWatch
-```
-
-The objective is to evolve the project from:
-
-```text
-Local + Docker + CI
-```
-
-to:
-
-```text
-Cloud-Deployed Application
-        ↓
-Cloud Configuration
-        ↓
-Cloud Validation
-        ↓
-Observability
-        ↓
-Deployment Automation
-```
-
-The AWS phase will focus on understanding how the application is securely configured, deployed, tested and observed in a cloud environment.
-
+The current **SDET Commerce Automation v1.0** project is considered complete.
 ---
 
 # Engineering Goals
@@ -1027,7 +1070,7 @@ It focuses on:
 - RBAC validation
 - Environment management
 - Secure reporting
-- CI/CD readiness
+- CI and deployment readiness
 - Maintainable test data
 - End-to-end quality engineering
 
@@ -1072,7 +1115,7 @@ Performance CI Quality Gate
         ↓
 Six-Job Green CI Pipeline
         ↓
-AWS Deployment
+AWS Cloud Readiness (Optional)
 ```
 
 Current completed state:
@@ -1107,7 +1150,7 @@ AWS Cloud Deployment + Validation
 
 **Animesh Pandey**
 
-Senior SDET / Automation Lead portfolio project focused on modern Quality Engineering, automation architecture, API testing, UI automation, CI/CD, and cloud-ready testing practices.
+Senior SDET / Automation Lead portfolio project focused on modern Quality Engineering, automation architecture, API testing, UI automation, CI, performance engineering, and cloud deployment.
 
 
 ---
