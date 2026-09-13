@@ -23312,3 +23312,1342 @@ The project now demonstrates hands-on experience with:
 
 The project now represents an end-to-end SDET and quality engineering portfolio covering application development, API automation, UI automation, database testing, containerization, CI, performance testing, cloud deployment, and production-style validation.
 
+
+---
+
+# Advanced SDET Learning Roadmap
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+The core **SDET Commerce Automation v1.0** project is complete.
+
+The following chapters represent optional advanced learning phases. They are intentionally separated from completed project functionality so that planned learning is never presented as implemented experience.
+
+The roadmap focuses on expanding from application-level Quality Engineering into cloud, container orchestration, observability, distributed systems, resilience engineering, AI-assisted testing, advanced delivery practices, system design, and interview preparation.
+
+---
+
+# Part 222 - AWS Cloud Readiness
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Understand how the existing SDET Commerce Automation platform could be designed, deployed, secured, monitored, and tested in AWS without requiring paid infrastructure for the current portfolio project.
+
+The goal is **AWS readiness and architectural understanding**, not claiming an AWS production deployment.
+
+## Current Deployment
+
+The current live portfolio architecture is:
+
+    React + TypeScript
+           |
+           v
+        Vercel
+           |
+           v
+    Spring Boot API
+           |
+           v
+        Render
+           |
+           v
+       Supabase
+      PostgreSQL
+
+## Target AWS Architecture Concept
+
+A possible AWS architecture would be:
+
+    Internet
+       |
+       v
+    Route 53
+       |
+       v
+    CloudFront
+       |
+       v
+    Frontend
+       |
+       v
+    Load Balancer
+       |
+       v
+    Spring Boot Application
+       |
+       v
+    Amazon RDS
+    PostgreSQL
+
+Supporting services could include:
+
+    IAM
+    CloudWatch
+    Secrets Manager
+    ECR
+    VPC
+    Security Groups
+
+## Topics to Learn
+
+### IAM
+
+Understand:
+
+- Users
+- Roles
+- Policies
+- Least privilege
+- Service permissions
+- Access keys
+- Temporary credentials
+
+Important SDET question:
+
+    How should automated tests authenticate
+    with cloud resources securely?
+
+Avoid:
+
+    Hardcoded AWS credentials
+    Credentials committed to Git
+    Over-permissive IAM policies
+
+### EC2
+
+Learn:
+
+- Virtual machines
+- AMIs
+- Instance types
+- Security groups
+- SSH concepts
+- Application deployment concepts
+- Environment configuration
+
+Conceptual flow:
+
+    GitHub
+       |
+       v
+    Build Application
+       |
+       v
+    EC2
+       |
+       v
+    Spring Boot
+
+### RDS
+
+Understand managed relational databases.
+
+Potential architecture:
+
+    Spring Boot
+       |
+       v
+    Amazon RDS
+    PostgreSQL
+
+Testing considerations:
+
+- Connectivity
+- Credentials
+- Schema migration
+- Connection pooling
+- Database validation
+- Backup concepts
+- Failure behaviour
+
+### VPC
+
+Understand:
+
+    VPC
+    Subnets
+    Public subnet
+    Private subnet
+    Route tables
+    Internet Gateway
+    Security Groups
+
+Typical architecture concept:
+
+    Public Layer
+       |
+       v
+    Application
+       |
+       v
+    Private Database Layer
+
+### CloudWatch
+
+Learn how application and infrastructure telemetry can be centralized.
+
+Potential validation areas:
+
+- Application logs
+- Error logs
+- CPU metrics
+- Memory-related metrics
+- Request behaviour
+- Alarms
+- Deployment troubleshooting
+
+## SDET Perspective
+
+AWS knowledge for an SDET is not only about deployment.
+
+An SDET should understand:
+
+    Where is the application running?
+    Where is the database?
+    Where are secrets stored?
+    How does networking work?
+    Where are logs available?
+    How can automation access the environment?
+    What happens when infrastructure fails?
+
+## Hands-On Goal
+
+Use zero-cost learning approaches wherever possible:
+
+- Architecture diagrams
+- AWS documentation
+- Local Docker simulation
+- IAM policy exercises
+- Infrastructure design
+- Interview scenarios
+
+Do not create paid AWS infrastructure merely to claim AWS experience.
+
+## Completion Criteria
+
+This phase can later be marked complete when the concepts have been studied and documented through practical architecture exercises.
+
+---
+
+# Part 223 - Kubernetes for SDET
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Understand container orchestration and how Quality Engineering changes when applications run across Kubernetes workloads.
+
+Docker answers:
+
+    How do I package my application?
+
+Kubernetes answers:
+
+    How do I operate many containers reliably?
+
+## Core Concepts
+
+Learn:
+
+- Cluster
+- Node
+- Pod
+- Deployment
+- Service
+- Namespace
+- ConfigMap
+- Secret
+- Replica
+- Ingress
+- Liveness probe
+- Readiness probe
+
+## Basic Architecture
+
+    User
+      |
+      v
+    Ingress
+      |
+      v
+    Service
+      |
+      v
+    Deployment
+      |
+      +----------+
+      |          |
+      v          v
+    Pod 1      Pod 2
+
+## Why SDETs Should Understand Kubernetes
+
+Testing distributed applications requires understanding where failures can occur.
+
+Examples:
+
+    Pod crash
+    Container restart
+    Failed readiness probe
+    Incorrect ConfigMap
+    Missing Secret
+    Service routing problem
+    Deployment rollout failure
+    Resource exhaustion
+
+## Useful Commands to Learn
+
+    kubectl get pods
+    kubectl get deployments
+    kubectl get services
+    kubectl describe pod
+    kubectl logs
+    kubectl get events
+
+These commands are learning targets and are not evidence that Kubernetes has already been implemented in this project.
+
+## Testing Areas
+
+Future Kubernetes testing exercises may include:
+
+- Deployment validation
+- Health checks
+- Pod restart behaviour
+- Service availability
+- Configuration validation
+- Rolling deployment behaviour
+- Failure recovery
+- Horizontal scaling concepts
+
+## Local Learning Approach
+
+Potential zero-cost tools:
+
+    Docker Desktop Kubernetes
+    kind
+    minikube
+
+The project could eventually be containerized into Kubernetes manifests locally without requiring paid cloud infrastructure.
+
+## Completion Criteria
+
+Mark this phase complete only after actual local Kubernetes deployment and validation have been performed.
+
+---
+
+# Part 224 - Observability, Logs & Monitoring
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Move from:
+
+    Test failed
+
+toward:
+
+    Test failed
+       +
+    Why did it fail?
+       +
+    Which component failed?
+       +
+    What evidence proves it?
+
+## Three Major Observability Areas
+
+    Logs
+    Metrics
+    Traces
+
+## Logs
+
+Logs explain events generated by an application.
+
+Examples:
+
+    Authentication failure
+    Database exception
+    API validation failure
+    Order creation failure
+    Payment processing error
+
+SDET use:
+
+    Automated test failure
+            |
+            v
+       Correlation ID
+            |
+            v
+       Backend Logs
+            |
+            v
+       Root Cause
+
+## Metrics
+
+Metrics provide numerical system behaviour.
+
+Examples:
+
+    Request count
+    Error rate
+    Response time
+    CPU usage
+    Memory usage
+    Database connections
+
+## Traces
+
+Distributed tracing follows a request across services.
+
+Example:
+
+    Frontend
+       |
+       v
+    API Gateway
+       |
+       v
+    Order Service
+       |
+       v
+    Payment Service
+       |
+       v
+    Database
+
+## Potential Tools to Study
+
+- Prometheus
+- Grafana
+- OpenTelemetry
+- CloudWatch concepts
+- Structured application logging
+
+No tool should be added to the completed project skill list until it has actually been implemented.
+
+## SDET Use Cases
+
+Observability can improve:
+
+- Defect investigation
+- Performance testing
+- CI troubleshooting
+- Production validation
+- Root-cause analysis
+- Release monitoring
+
+## Future Exercise
+
+Potential exercise:
+
+    Playwright/API failure
+            |
+            v
+       Capture Request ID
+            |
+            v
+       Search Application Logs
+            |
+            v
+       Identify Backend Error
+
+## Completion Criteria
+
+Mark complete after implementing at least one practical logging/metrics workflow and documenting the evidence.
+
+---
+
+# Part 225 - Kafka & Event-Driven Testing
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Understand asynchronous and event-driven systems and learn how they should be tested.
+
+Traditional REST flow:
+
+    Client
+      |
+      v
+    REST API
+      |
+      v
+    Response
+
+Event-driven flow:
+
+    Producer
+       |
+       v
+      Kafka
+       |
+       v
+    Consumer
+       |
+       v
+    Database / Service
+
+## Core Kafka Concepts
+
+Learn:
+
+- Producer
+- Consumer
+- Broker
+- Topic
+- Partition
+- Offset
+- Consumer Group
+- Message key
+- Event
+- Retention
+
+## Example Commerce Scenario
+
+Order creation could conceptually publish:
+
+    ORDER_CREATED
+
+A payment component could consume the event:
+
+    ORDER_CREATED
+         |
+         v
+      Payment
+         |
+         v
+    PAYMENT_COMPLETED
+
+Another component could consume:
+
+    PAYMENT_COMPLETED
+         |
+         v
+      Notification
+
+## Testing Challenges
+
+Event-driven testing introduces:
+
+- Asynchronous processing
+- Eventual consistency
+- Duplicate events
+- Ordering
+- Retry behaviour
+- Consumer failure
+- Message schema validation
+- Timeout handling
+
+## Potential SDET Tests
+
+Future exercises may validate:
+
+    Event published correctly
+    Event schema is valid
+    Correct consumer receives event
+    Duplicate event handling
+    Retry behaviour
+    Invalid event behaviour
+    Database eventually reaches expected state
+
+## Important Principle
+
+Avoid fixed waits such as:
+
+    sleep(10000)
+
+Prefer polling with a timeout:
+
+    Wait until expected state exists
+    OR
+    timeout is reached
+
+## Completion Criteria
+
+Mark complete only after Kafka has actually been run locally and an event-driven workflow has been implemented and tested.
+
+---
+
+# Part 226 - Redis & Cache Testing
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Understand caching and the testing problems introduced when application responses can come from either a database or a cache.
+
+Without cache:
+
+    API
+     |
+     v
+    Database
+
+With cache:
+
+    API
+     |
+     v
+    Redis
+     |
+     +---- Cache Hit ----> Response
+     |
+     +---- Cache Miss ---> Database
+                           |
+                           v
+                         Redis
+                           |
+                           v
+                        Response
+
+## Core Concepts
+
+Learn:
+
+- Key-value storage
+- Cache hit
+- Cache miss
+- TTL
+- Expiration
+- Cache invalidation
+- Eviction
+- Stale data
+
+## Testing Scenarios
+
+Potential future tests:
+
+### Cache Miss
+
+    Request
+       |
+       v
+    Redis Miss
+       |
+       v
+    Database
+       |
+       v
+    Cache Population
+
+### Cache Hit
+
+    Request
+       |
+       v
+    Redis Hit
+       |
+       v
+    Response
+
+### Expiration
+
+Validate that data is refreshed after TTL expiration.
+
+### Cache Invalidation
+
+Example:
+
+    Product price = 100
+       |
+       v
+    Cached
+       |
+       v
+    Product updated to 120
+       |
+       v
+    Cache must not continue returning 100
+
+## SDET Risks
+
+Caching can create defects involving:
+
+- Stale data
+- Incorrect invalidation
+- Environment contamination
+- Test-order dependency
+- Timing issues
+- Inconsistent API responses
+
+## Completion Criteria
+
+Mark complete after Redis is actually integrated locally and cache behaviour has been validated through automated tests.
+
+---
+
+# Part 227 - Resilience & Distributed-System Testing
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Learn to test not only whether a system works, but how it behaves when dependencies fail.
+
+Traditional functional question:
+
+    Does checkout work?
+
+Resilience question:
+
+    What happens when a checkout dependency fails?
+
+## Failure Scenarios
+
+Potential exercises:
+
+- Database unavailable
+- API timeout
+- Slow dependency
+- Invalid downstream response
+- Network interruption
+- Service restart
+- Duplicate request
+- Partial failure
+
+## Important Concepts
+
+Learn:
+
+- Timeout
+- Retry
+- Circuit breaker
+- Idempotency
+- Graceful degradation
+- Eventual consistency
+- Fault tolerance
+
+## Idempotency Example
+
+A payment request should not accidentally charge twice because a client retried the request.
+
+Concept:
+
+    Same request
+       |
+       +---- First attempt ---> Process
+       |
+       +---- Retry -----------> Detect duplicate
+
+## Resilience Testing Flow
+
+    Inject Failure
+         |
+         v
+    Execute Request
+         |
+         v
+    Observe Behaviour
+         |
+         +---- Response
+         +---- Logs
+         +---- Retry
+         +---- Database State
+         +---- Recovery
+
+## Potential Tools
+
+Future learning may explore:
+
+- WireMock
+- Toxiproxy
+- Docker network manipulation
+- Application-level fault simulation
+
+## Completion Criteria
+
+Mark complete after practical failure scenarios have been injected and expected recovery behaviour has been validated.
+
+---
+
+# Part 228 - AI-Assisted Testing & Quality Engineering
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Learn how AI can assist Quality Engineering without replacing deterministic automation and engineering judgement.
+
+## Potential AI-Assisted Areas
+
+- Test-case ideation
+- Requirement analysis
+- Boundary-condition discovery
+- Test-data generation
+- Failure summarization
+- Log analysis
+- Defect clustering
+- Automation code assistance
+- Regression prioritization
+
+## Example Workflow
+
+    Requirement
+        |
+        v
+    AI-assisted analysis
+        |
+        v
+    Candidate scenarios
+        |
+        v
+    Human review
+        |
+        v
+    Deterministic automation
+        |
+        v
+    CI execution
+
+## Important Principle
+
+AI-generated tests should not automatically be trusted.
+
+Validate:
+
+    Is the assertion correct?
+    Is the scenario relevant?
+    Is the test deterministic?
+    Is sensitive data protected?
+    Can the result be reproduced?
+
+## AI vs Traditional Automation
+
+Traditional automation:
+
+    Known Input
+       |
+       v
+    Deterministic Test
+       |
+       v
+    Expected Assertion
+
+AI-assisted workflow:
+
+    Context
+       |
+       v
+    Probabilistic Suggestion
+       |
+       v
+    Engineering Review
+       |
+       v
+    Deterministic Validation
+
+## Portfolio Goal
+
+A future implementation should demonstrate a genuine testing problem improved by AI rather than adding an AI label purely for resume keywords.
+
+## Completion Criteria
+
+Mark complete only after building and validating a practical AI-assisted QE workflow.
+
+---
+
+# Part 229 - Advanced CI & Deployment Strategy
+
+> **Status: UPCOMING / NOT YET IMPLEMENTED**
+
+## Objective
+
+Build deeper understanding of software delivery pipelines beyond simply executing tests on every commit.
+
+Current project CI quality gates already validate:
+
+    Backend Build & Test
+    Frontend Lint & Build
+    Docker Build Validation
+    REST Assured Regression
+    Playwright UI Automation
+    k6 Performance Smoke
+
+## Advanced Pipeline Concepts
+
+Study:
+
+- Pull-request validation
+- Branch protection
+- Quality gates
+- Environment promotion
+- Artifact management
+- Deployment approvals
+- Rollback strategy
+- Smoke testing after deployment
+- Test result retention
+- Parallel execution
+- Dependency caching
+
+## Conceptual Delivery Pipeline
+
+    Developer Commit
+          |
+          v
+    Pull Request
+          |
+          v
+    Build
+          |
+          v
+    Unit / Component Tests
+          |
+          v
+    API Automation
+          |
+          v
+    UI Automation
+          |
+          v
+    Performance Smoke
+          |
+          v
+    Artifact
+          |
+          v
+    Deployment
+          |
+          v
+    Post-Deployment Smoke
+          |
+          v
+    Release
+
+## Quality Gate Principle
+
+A pipeline should answer:
+
+    Is this build safe enough
+    to move to the next stage?
+
+Examples:
+
+    Build failure       -> STOP
+    API regression      -> STOP
+    Critical UI failure -> STOP
+    Performance breach  -> STOP
+
+## CI vs CD
+
+CI:
+
+    Continuously validate changes
+
+CD:
+
+    Deliver/deploy validated changes
+
+Do not claim a custom CD implementation until it has actually been designed, implemented, and validated.
+
+## Completion Criteria
+
+Mark complete after implementing at least one meaningful advanced delivery workflow beyond the existing CI pipeline.
+
+---
+
+# Part 230 - SDET System Design & Interview Mapping
+
+> **Status: UPCOMING / LEARNING PHASE**
+
+## Objective
+
+Learn to explain Quality Engineering architecture at Senior SDET / Automation Lead level.
+
+The focus should move from:
+
+    I wrote Selenium/Playwright tests
+
+toward:
+
+    I designed a quality strategy
+    across multiple application layers.
+
+## System Under Test
+
+For the current project:
+
+    Frontend
+       |
+       v
+    REST API
+       |
+       v
+    Database
+
+Quality layers:
+
+    Static validation
+    Backend tests
+    API tests
+    Database tests
+    UI tests
+    Performance tests
+    Security/RBAC tests
+    Deployment validation
+
+## Test Pyramid Thinking
+
+A practical strategy:
+
+           UI
+          /  \
+         / E2E\
+        /------\
+       /  API   \
+      /----------\
+     / Unit/Comp  \
+    /--------------\
+
+Not every scenario should be tested through the browser.
+
+## What to Test at API Layer
+
+Prefer API automation for:
+
+- Business rules
+- Validation
+- Error handling
+- Authorization
+- Data combinations
+- CRUD behaviour
+- Contract/schema validation
+
+## What to Test at UI Layer
+
+Prefer UI automation for:
+
+- Critical customer journeys
+- Browser behaviour
+- Navigation
+- UI integration
+- Important visual interactions
+
+## Test Data Strategy
+
+Senior-level discussion should include:
+
+    Dynamic data
+    Independent tests
+    API-assisted setup
+    Cleanup
+    Environment isolation
+    No dependency on execution order
+
+## CI Strategy
+
+Explain:
+
+    Fast checks first
+       |
+       v
+    API regression
+       |
+       v
+    Critical UI
+       |
+       v
+    Performance smoke
+
+## Failure Investigation
+
+A strong SDET does not stop at:
+
+    Test failed
+
+Investigation should consider:
+
+    Test defect?
+    Application defect?
+    Data issue?
+    Environment issue?
+    Network issue?
+    Deployment issue?
+    Dependency issue?
+
+## Interview Mapping
+
+Be prepared to explain:
+
+- Why REST Assured?
+- Why Playwright?
+- Why separate API and UI frameworks?
+- How is authentication handled?
+- How is test data generated?
+- How are flaky tests reduced?
+- Why use Docker?
+- Why test the database?
+- Why run k6 in CI?
+- How do quality gates work?
+- How would the framework scale?
+- How would you test microservices?
+- How would you test asynchronous systems?
+- How would you debug CI-only failures?
+
+## Completion Criteria
+
+This is primarily a knowledge and communication phase. Complete it through mock interviews, architecture explanations, and scenario-based practice.
+
+---
+
+# Part 231 - Final Portfolio & Foreign Job Preparation
+
+> **Status: UPCOMING / CAREER PREPARATION**
+
+## Objective
+
+Convert the completed engineering work into clear evidence for Senior SDET / Automation Lead opportunities.
+
+## Portfolio Story
+
+The project should tell a progression:
+
+    Backend Application
+          |
+          v
+    API Automation
+          |
+          v
+    Database Validation
+          |
+          v
+    Authentication / RBAC
+          |
+          v
+    React Frontend
+          |
+          v
+    Playwright Automation
+          |
+          v
+    Dockerization
+          |
+          v
+    GitHub Actions CI
+          |
+          v
+    Performance Testing
+          |
+          v
+    Live Cloud Deployment
+
+## GitHub Portfolio
+
+Repository should clearly communicate:
+
+- What the project solves
+- Architecture
+- Technology stack
+- Automation strategy
+- CI quality gates
+- Performance testing
+- Live deployment
+- How to run locally
+- Test reports/results
+- Key engineering learnings
+
+## Resume Positioning
+
+The project should be presented as a hands-on engineering project rather than professional client experience.
+
+Potential positioning:
+
+    SDET Commerce Automation
+    Personal Quality Engineering Project
+
+Focus on:
+
+- Framework architecture
+- API automation
+- UI automation
+- CI
+- Docker
+- Performance
+- Cloud deployment
+- Quality strategy
+
+## LinkedIn Positioning
+
+Use the project section to show:
+
+    End-to-End Quality Engineering
+    Java / Spring Boot
+    REST Assured
+    Playwright
+    React / TypeScript
+    PostgreSQL
+    Docker
+    GitHub Actions
+    k6
+    Cloud Deployment
+
+## Demo Preparation
+
+Prepare a short project walkthrough covering:
+
+    1. GitHub README
+    2. Architecture
+    3. Live application
+    4. Swagger APIs
+    5. REST Assured framework
+    6. Playwright framework
+    7. Docker
+    8. GitHub Actions
+    9. k6 results
+    10. Live deployment
+
+## Interview Project Pitch
+
+Target explanation:
+
+    I built an end-to-end commerce platform as a hands-on
+    Quality Engineering project.
+
+    The backend uses Java and Spring Boot with PostgreSQL,
+    while the frontend uses React and TypeScript.
+
+    I implemented REST Assured API automation, Playwright
+    UI automation, database validation, JWT/RBAC security
+    testing, Dockerization, GitHub Actions CI quality gates,
+    Swagger documentation, Allure reporting, and k6
+    performance testing.
+
+    I also deployed the complete application using Vercel,
+    Render, and Supabase and validated the live end-to-end
+    commerce workflow.
+
+## Senior SDET Preparation Areas
+
+Continue strengthening:
+
+- Java
+- JavaScript / TypeScript
+- REST API testing
+- Playwright
+- Selenium
+- Appium
+- SQL
+- Git
+- Linux
+- Docker
+- CI/CD concepts
+- Cloud fundamentals
+- Data structures and algorithms
+- Test architecture
+- System design
+- Performance testing
+- Security testing fundamentals
+
+## Foreign Role Preparation
+
+Prepare for roles such as:
+
+    Senior SDET
+    Senior QA Automation Engineer
+    Software Development Engineer in Test
+    Quality Engineer
+    Automation Lead
+    Test Automation Architect
+
+Evaluate job descriptions by identifying:
+
+    Required skills
+       |
+       v
+    Existing experience
+       |
+       v
+    Portfolio evidence
+       |
+       v
+    Missing skills
+       |
+       v
+    Focused preparation
+
+Avoid learning technologies only to increase keyword count.
+
+Prioritize skills that repeatedly appear in target job descriptions.
+
+## Final Principle
+
+The goal is not to claim knowledge of every technology.
+
+The goal is to demonstrate:
+
+    Strong fundamentals
+           +
+    Hands-on automation
+           +
+    Application understanding
+           +
+    CI / DevOps awareness
+           +
+    Quality architecture
+           +
+    Ability to learn new systems
+
+---
+
+# Roadmap Status Summary
+
+## Completed - SDET Commerce Automation v1.0
+
+- Spring Boot backend
+- PostgreSQL
+- JWT authentication
+- RBAC
+- Product management
+- Cart
+- Orders
+- Mock payment
+- React + TypeScript frontend
+- REST Assured API automation
+- TestNG
+- JDBC / SQL validation
+- JSON schema validation
+- Allure
+- Swagger / OpenAPI
+- Playwright + TypeScript
+- UI + API hybrid automation
+- Docker
+- Docker Compose
+- GitHub Actions CI quality gates
+- k6 smoke/load/stress testing
+- Live Vercel frontend
+- Live Render backend
+- Live Supabase PostgreSQL
+- Live end-to-end validation
+
+## Upcoming Advanced Learning
+
+- Part 222 - AWS Cloud Readiness
+- Part 223 - Kubernetes for SDET
+- Part 224 - Observability, Logs & Monitoring
+- Part 225 - Kafka & Event-Driven Testing
+- Part 226 - Redis & Cache Testing
+- Part 227 - Resilience & Distributed-System Testing
+- Part 228 - AI-Assisted Testing & Quality Engineering
+- Part 229 - Advanced CI & Deployment Strategy
+- Part 230 - SDET System Design & Interview Mapping
+- Part 231 - Final Portfolio & Foreign Job Preparation
+
+## Current Project State
+
+    SDET Commerce Automation v1.0
+                 |
+                 v
+        ENGINEERING COMPLETE
+                 |
+                 v
+          PORTFOLIO READY
+                 |
+                 v
+       ADVANCED LEARNING ROADMAP
+
